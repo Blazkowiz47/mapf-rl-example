@@ -57,14 +57,14 @@ random actors, three seeded reachable goals, separate A*/Dijkstra/BFS/DFS
 animations, and a combined 2×2 comparison:
 
 ```bash
-uv run python src/visualize_classical_planners.py
+uv run python scripts/visualize_classical_planners.py
 ```
 
 GIFs are written to `artifacts/classical_planners/` by default. Generate MP4s
 as well, select another seed, or control the downsampled render:
 
 ```bash
-uv run python src/visualize_classical_planners.py \
+uv run python scripts/visualize_classical_planners.py \
   --format both \
   --output-dir artifacts/classical_planners \
   --grid-size 2000 \

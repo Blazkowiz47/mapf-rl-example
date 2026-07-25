@@ -1,6 +1,8 @@
 """End-to-end MAPF training example."""
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import dl_robotics
@@ -17,7 +19,6 @@ from dl_robotics import (
 )
 
 from mapf_baselines import main as print_baselines
-from visualize_classical_planners import main as visualize_classical_planners
 
 
 def test_classical_baseline_report(capsys) -> None:
@@ -37,9 +38,16 @@ def test_classical_baseline_report(capsys) -> None:
     }
 
 
-def test_classical_planner_visualizations(tmp_path: Path, capsys) -> None:
-    visualize_classical_planners(
+def test_classical_planner_visualizations(tmp_path: Path) -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
         [
+            sys.executable,
+            str(
+                project_root
+                / "scripts"
+                / "visualize_classical_planners.py"
+            ),
             "--output-dir",
             str(tmp_path),
             "--format",
@@ -52,10 +60,14 @@ def test_classical_planner_visualizations(tmp_path: Path, capsys) -> None:
             "12",
             "--fps",
             "2",
-        ]
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=project_root,
     )
 
-    report = json.loads(capsys.readouterr().out)
+    report = json.loads(result.stdout)
 
     assert report["scenario"] == "procedural_128_2026"
     assert report["logical_grid"] == [128, 128]
