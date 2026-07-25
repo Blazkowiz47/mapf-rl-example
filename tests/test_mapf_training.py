@@ -8,7 +8,32 @@ import numpy as np
 import yaml
 from dl_core import load_builtin_components
 from dl_core.trainers import DQNTrainer
-from dl_robotics import GridMAPFEnvironment
+from dl_robotics import (
+    GridMAPFEnvironment,
+    GridScenario,
+    astar_path,
+    bfs_path,
+    dijkstra_path,
+)
+
+from mapf_baselines import main as print_baselines
+
+
+def test_classical_baseline_report(capsys) -> None:
+    print_baselines()
+
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["scenario"] == "two_agent_crossing"
+    assert report["makespan_lower_bound"] == 8
+    assert report["sum_of_costs_lower_bound"] == 16
+    assert [agent["shortest_moves"] for agent in report["agents"]] == [8, 8]
+    assert set(report["agents"][0]["paths"]) == {
+        "astar",
+        "dijkstra",
+        "bfs",
+        "dfs",
+    }
 
 
 def test_crossing_scenario_has_a_collision_free_solution() -> None:
@@ -16,6 +41,18 @@ def test_crossing_scenario_has_a_collision_free_solution() -> None:
     config = yaml.safe_load(
         (project_root / "configs" / "mapf_dqn.yaml").read_text()
     )
+    scenario = GridScenario.from_config(
+        config["evaluation_environment"]["scenario"]
+    )
+    shortest_moves = []
+    for start, goal in zip(scenario.starts, scenario.goals, strict=True):
+        planner_moves = {
+            len(planner(scenario, start, goal)) - 1
+            for planner in (astar_path, dijkstra_path, bfs_path)
+        }
+        assert len(planner_moves) == 1
+        shortest_moves.append(planner_moves.pop())
+
     environment = GridMAPFEnvironment(config["evaluation_environment"])
     _, info = environment.reset(seed=2026)
     assert info["is_success"] is False
@@ -32,8 +69,8 @@ def test_crossing_scenario_has_a_collision_free_solution() -> None:
     assert truncated is False
     assert info["is_success"] is True
     assert info["episode_collisions"] == 0
-    assert info["makespan"] == 8
-    assert info["sum_of_costs"] == 16
+    assert info["makespan"] == max(shortest_moves)
+    assert info["sum_of_costs"] == sum(shortest_moves)
     assert info["path_length"] == 16
 
 

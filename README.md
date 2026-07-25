@@ -23,6 +23,25 @@ The short 64-transition configuration is an integration example, not a
 convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
 learning experiment.
 
+## Classical Baselines
+
+Print the deterministic A*, Dijkstra, BFS, and DFS paths for every agent:
+
+```bash
+uv run python src/mapf_baselines.py
+```
+
+The report includes exact per-agent shortest move counts plus static makespan
+and sum-of-costs lower bounds. A*, Dijkstra, and BFS all establish the optimal
+single-agent costs; DFS is included as a deterministic reachability/debugging
+route and is not treated as optimal. The integration test verifies that the
+hand-authored collision-free schedule reaches both agents' goals with no
+collisions while matching both exact lower bounds.
+
+These paths ignore other moving actors. Independently optimal single-agent
+paths can conflict, so use them as RL baselines and lower bounds rather than as
+a complete MAPF solver.
+
 The CLI run writes artifacts beneath
 `artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
 
