@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "deep-learning-core",
     "deep-learning-robotics",
+    "imageio>=2.34",
     "numpy",
     "opencv-python-headless",
 ]

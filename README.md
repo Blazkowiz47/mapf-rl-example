@@ -52,34 +52,49 @@ a complete MAPF solver.
 
 ## Visualize Classical Plans
 
-Generate separate A*, Dijkstra, BFS, and DFS animations plus a combined 2×2
-comparison:
+Generate a seeded 2000×2000 logical maze with random wall segments, three
+random actors, three seeded reachable goals, separate A*/Dijkstra/BFS/DFS
+animations, and a combined 2×2 comparison:
 
 ```bash
 uv run python src/visualize_classical_planners.py
 ```
 
 GIFs are written to `artifacts/classical_planners/` by default. Generate MP4s
-as well, or select a custom output directory:
+as well, select another seed, or control the downsampled render:
 
 ```bash
 uv run python src/visualize_classical_planners.py \
   --format both \
   --output-dir artifacts/classical_planners \
-  --fps 6 \
-  --cell-size 40
+  --grid-size 2000 \
+  --render-size 400 \
+  --max-frames 60 \
+  --seed 2026 \
+  --fps 6
 ```
 
-The example intentionally places three agents in separated maze lanes. This
-keeps execution collision-free so the animation isolates route-planner
-behavior: A*, Dijkstra, and BFS produce exact shortest paths, while DFS follows
-a longer deterministic route. The colored lines show complete planned routes;
-the numbered circles are current actor positions and matching outlined cells
-are their goals.
+Every algorithm plans one route per actor. A deterministic reservation pass
+then assigns the smallest safe start delay and rejects vertex conflicts and
+edge swaps. The resulting joint actions are executed simultaneously through
+`GridWorldBatch`; media generation fails if any actor collision, wall
+collision, boundary collision, or incomplete goal remains. The colored lines
+show complete routes, numbered circles are current actors, and matching
+outlined cells are their goals.
 
-This visualizes execution of paths returned by the package. It does not
-visualize search-frontier expansion, and the separated-lane setup is not a
-general solution to interacting MAPF problems.
+The logical occupancy map remains 2000×2000, while OpenCV downsamples its
+static maze layer for display. Frames are written incrementally with ImageIO,
+so the script does not retain hundreds of full-resolution frames in memory.
+This visualizes execution of returned paths, not search-frontier expansion.
+Start-delay reservations make this generated example safe, but they are still
+a limited coordination strategy rather than a complete MAPF solver.
+
+Goal selection samples reachable points from deterministic DFS traversals, so
+it is reproducible and cannot place an unreachable target, but it is not a
+spatially uniform sample. The default four-million-cell run can peak near
+1.2 GiB because the package's current pure-Python BFS and Dijkstra
+implementations retain large search dictionaries. Use `--grid-size 512` for a
+lighter teaching run.
 
 ![A 2x2 animated comparison of A-star, Dijkstra, BFS, and DFS routes](docs/media/classical_planners/comparison.gif)
 

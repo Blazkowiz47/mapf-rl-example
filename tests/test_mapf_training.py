@@ -44,16 +44,25 @@ def test_classical_planner_visualizations(tmp_path: Path, capsys) -> None:
             str(tmp_path),
             "--format",
             "gif",
+            "--grid-size",
+            "128",
+            "--render-size",
+            "128",
+            "--max-frames",
+            "12",
             "--fps",
             "2",
-            "--cell-size",
-            "16",
         ]
     )
 
     report = json.loads(capsys.readouterr().out)
 
-    assert report["scenario"] == "three_agent_lanes"
+    assert report["scenario"] == "procedural_128_2026"
+    assert report["logical_grid"] == [128, 128]
+    assert report["rendered_frames"] == 12
+    assert report["wall_cells"] > 0
+    assert len({tuple(start) for start in report["starts"]}) == 3
+    assert len({tuple(goal) for goal in report["goals"]}) == 3
     assert len(report["files"]) == 5
     assert {Path(path).name for path in report["files"]} == {
         "astar.gif",
@@ -63,10 +72,12 @@ def test_classical_planner_visualizations(tmp_path: Path, capsys) -> None:
         "comparison.gif",
     }
     assert all(Path(path).stat().st_size > 0 for path in report["files"])
-    assert report["algorithms"]["astar"]["route_moves"] == [10, 10, 10]
-    assert report["algorithms"]["dijkstra"]["route_moves"] == [10, 10, 10]
-    assert report["algorithms"]["bfs"]["route_moves"] == [10, 10, 10]
-    assert report["algorithms"]["dfs"]["route_moves"] == [18, 18, 18]
+    assert report["algorithms"]["astar"]["route_moves"] == (
+        report["algorithms"]["dijkstra"]["route_moves"]
+    )
+    assert report["algorithms"]["astar"]["route_moves"] == (
+        report["algorithms"]["bfs"]["route_moves"]
+    )
     assert all(
         algorithm["collisions"] == 0
         for algorithm in report["algorithms"].values()

@@ -344,6 +344,7 @@ source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },
     { name = "deep-learning-robotics" },
+    { name = "imageio" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -360,6 +361,7 @@ dev = [
 requires-dist = [
     { name = "deep-learning-core", editable = "../dl-core" },
     { name = "deep-learning-robotics", editable = "../dl-robotics" },
+    { name = "imageio", specifier = ">=2.34" },
     { name = "numpy" },
     { name = "opencv-python-headless" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
