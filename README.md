@@ -23,6 +23,14 @@ The short 64-transition configuration is an integration example, not a
 convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
 learning experiment.
 
+The training CLI writes artifacts beneath
+`artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
+
+- checkpoints and normal dl-core run metadata
+- `final/metrics/episodes_robotics.jsonl`
+- captured evaluation trajectories under `final/episodes/evaluation/*.npz`
+- matching evaluation animations under `final/episodes/evaluation/*.gif`
+
 ## Classical Baselines
 
 Print the deterministic A*, Dijkstra, BFS, and DFS paths for every agent:
@@ -42,13 +50,43 @@ These paths ignore other moving actors. Independently optimal single-agent
 paths can conflict, so use them as RL baselines and lower bounds rather than as
 a complete MAPF solver.
 
-The CLI run writes artifacts beneath
-`artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
+## Visualize Classical Plans
 
-- checkpoints and normal dl-core run metadata
-- `final/metrics/episodes_robotics.jsonl`
-- captured evaluation trajectories under `final/episodes/evaluation/*.npz`
-- matching evaluation animations under `final/episodes/evaluation/*.gif`
+Generate separate A*, Dijkstra, BFS, and DFS animations plus a combined 2×2
+comparison:
+
+```bash
+uv run python src/visualize_classical_planners.py
+```
+
+GIFs are written to `artifacts/classical_planners/` by default. Generate MP4s
+as well, or select a custom output directory:
+
+```bash
+uv run python src/visualize_classical_planners.py \
+  --format both \
+  --output-dir artifacts/classical_planners \
+  --fps 6 \
+  --cell-size 40
+```
+
+The example intentionally places three agents in separated maze lanes. This
+keeps execution collision-free so the animation isolates route-planner
+behavior: A*, Dijkstra, and BFS produce exact shortest paths, while DFS follows
+a longer deterministic route. The colored lines show complete planned routes;
+the numbered circles are current actor positions and matching outlined cells
+are their goals.
+
+This visualizes execution of paths returned by the package. It does not
+visualize search-frontier expansion, and the separated-lane setup is not a
+general solution to interacting MAPF problems.
+
+![A 2x2 animated comparison of A-star, Dijkstra, BFS, and DFS routes](docs/media/classical_planners/comparison.gif)
+
+Individual previews: [A*](docs/media/classical_planners/astar.gif),
+[Dijkstra](docs/media/classical_planners/dijkstra.gif),
+[BFS](docs/media/classical_planners/bfs.gif), and
+[DFS](docs/media/classical_planners/dfs.gif).
 
 ## Sweep
 

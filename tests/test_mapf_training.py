@@ -17,6 +17,7 @@ from dl_robotics import (
 )
 
 from mapf_baselines import main as print_baselines
+from visualize_classical_planners import main as visualize_classical_planners
 
 
 def test_classical_baseline_report(capsys) -> None:
@@ -34,6 +35,42 @@ def test_classical_baseline_report(capsys) -> None:
         "bfs",
         "dfs",
     }
+
+
+def test_classical_planner_visualizations(tmp_path: Path, capsys) -> None:
+    visualize_classical_planners(
+        [
+            "--output-dir",
+            str(tmp_path),
+            "--format",
+            "gif",
+            "--fps",
+            "2",
+            "--cell-size",
+            "16",
+        ]
+    )
+
+    report = json.loads(capsys.readouterr().out)
+
+    assert report["scenario"] == "three_agent_lanes"
+    assert len(report["files"]) == 5
+    assert {Path(path).name for path in report["files"]} == {
+        "astar.gif",
+        "dijkstra.gif",
+        "bfs.gif",
+        "dfs.gif",
+        "comparison.gif",
+    }
+    assert all(Path(path).stat().st_size > 0 for path in report["files"])
+    assert report["algorithms"]["astar"]["route_moves"] == [10, 10, 10]
+    assert report["algorithms"]["dijkstra"]["route_moves"] == [10, 10, 10]
+    assert report["algorithms"]["bfs"]["route_moves"] == [10, 10, 10]
+    assert report["algorithms"]["dfs"]["route_moves"] == [18, 18, 18]
+    assert all(
+        algorithm["collisions"] == 0
+        for algorithm in report["algorithms"].values()
+    )
 
 
 def test_crossing_scenario_has_a_collision_free_solution() -> None:

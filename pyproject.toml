@@ -11,6 +11,8 @@ requires-python = ">=3.10"
 dependencies = [
     "deep-learning-core",
     "deep-learning-robotics",
+    "numpy",
+    "opencv-python-headless",
 ]
 
 [project.optional-dependencies]

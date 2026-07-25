@@ -344,6 +344,10 @@ source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },
     { name = "deep-learning-robotics" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "opencv-python-headless" },
 ]
 
 [package.optional-dependencies]
@@ -356,6 +360,8 @@ dev = [
 requires-dist = [
     { name = "deep-learning-core", editable = "../dl-core" },
     { name = "deep-learning-robotics", editable = "../dl-robotics" },
+    { name = "numpy" },
+    { name = "opencv-python-headless" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },
 ]
