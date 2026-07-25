@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mapf-rl-example"
+version = "0.1.0"
+description = "Vector DQN example for a two-agent MAPF problem."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "deep-learning-core",
+    "deep-learning-robotics",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.12",
+]
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+sources = ["src"]
+
+[tool.uv.sources]
+deep-learning-core = { path = "../dl-core", editable = true }
+deep-learning-robotics = { path = "../dl-robotics", editable = true }
+

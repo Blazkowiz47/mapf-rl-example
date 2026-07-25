@@ -1,0 +1,24 @@
+template_name: mapf_dqn_sweep
+description: "Small MAPF DQN reward and learning-rate sweep"
+version: "1.0"
+base_config: "./mapf_dqn.yaml"
+
+fixed:
+  runtime:
+    log_level: INFO
+  trainer:
+    dqn:
+      total_timesteps: 256
+      evaluation_frequency: 8
+
+default_grid: {}
+
+tracking:
+  experiment_name: mapf_rl_example
+  sweep_name: mapf_dqn
+  run_name_template: "lr_{optimizers.lr}_collision_{environment.rewards.collision}"
+  description_template: "lr={optimizers.lr}, collision={environment.rewards.collision}"
+
+seeds: [2026, 2027]
+preset_configs: {}
+

@@ -1,0 +1,100 @@
+seed: 2026
+deterministic: true
+
+runtime:
+  output_dir: artifacts
+  log_level: INFO
+
+experiment:
+  name: mapf_rl_example
+  description: "Centralized DQN on a two-agent crossing task"
+
+accelerator:
+  type: cpu
+
+environment:
+  name: robotics_mapf_vector
+  num_envs: 4
+  scenario:
+    name: two_agent_crossing
+    width: 5
+    height: 5
+    max_steps: 12
+    starts: [[0, 0], [4, 4]]
+    goals: [[4, 4], [0, 0]]
+    walls: [[1, 2], [3, 2]]
+  rewards:
+    step: -0.01
+    progress: 0.10
+    collision: -0.25
+    goal: 1.0
+    success: 5.0
+  render:
+    cell_size: 32
+    show_grid: true
+
+evaluation_environment:
+  name: robotics_mapf
+  scenario:
+    name: two_agent_crossing
+    width: 5
+    height: 5
+    max_steps: 12
+    starts: [[0, 0], [4, 4]]
+    goals: [[4, 4], [0, 0]]
+    walls: [[1, 2], [3, 2]]
+  rewards:
+    step: -0.01
+    progress: 0.10
+    collision: -0.25
+    goal: 1.0
+    success: 5.0
+  render:
+    cell_size: 32
+    show_grid: true
+
+models:
+  q_network:
+    name: dqn_mlp
+    hidden_sizes: [64, 64]
+
+optimizers:
+  name: adam
+  lr: 0.001
+
+trainer:
+  dqn:
+    total_timesteps: 64
+    max_episode_steps: 12
+    evaluation_frequency: 4
+    evaluation_episodes: 1
+    checkpoint_frequency: 0
+    gamma: 0.99
+    buffer_size: 256
+    batch_size: 8
+    learning_starts: 8
+    train_frequency: 4
+    gradient_steps: 1
+    target_update_frequency: 32
+    double_dqn: true
+    epsilon_start: 1.0
+    epsilon_end: 0.10
+    epsilon_decay_steps: 64
+
+episode_managers:
+  robotics:
+    capture_phases: [evaluation]
+    capture_every_n_episodes: 1
+    max_captured_episodes: 2
+    info_keys:
+      - episode_collisions
+      - makespan
+      - sum_of_costs
+      - path_length
+    media_format: gif
+    fps: 6
+    cell_size: 32
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 1

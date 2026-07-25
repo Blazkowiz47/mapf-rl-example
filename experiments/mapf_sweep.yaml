@@ -1,0 +1,12 @@
+extends_template: "../configs/mapf_sweep_base.yaml"
+description: "Compare DQN learning rates and collision penalties"
+
+grid:
+  optimizers.lr: [0.001, 0.0003]
+  environment.rewards.collision: [-0.25, -0.5]
+
+seeds: [2026, 2027]
+
+custom_tags:
+  task: mapf
+  algorithm: dqn
