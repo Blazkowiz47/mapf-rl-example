@@ -10,6 +10,21 @@ separate scalar world performs deterministic evaluation. The robotics episode
 manager records MAPF metrics, the full evaluation trajectory, and an animated
 GIF.
 
+The repository also contains `ProceduralPathfindingEnv`, a single-agent
+Gymnasium environment for the ViT pathfinding example. Every reset replaces the
+previous maze with a seeded 1000×1000 task containing one red agent and one blue
+goal. `get_grid_rgb()` and `render()` expose the current grid as an RGB
+`uint8` matrix, while the normal observation is resized to 256×256 for
+memory-bounded replay and ViT input.
+
+```python
+from pathfinding_environment import ProceduralPathfindingEnv
+
+environment = ProceduralPathfindingEnv()
+observation, info = environment.reset(seed=2026)
+full_grid = environment.get_grid_rgb()  # [1000, 1000, 3]
+```
+
 ## Run
 
 ```bash
