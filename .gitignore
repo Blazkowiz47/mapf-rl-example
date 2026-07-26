@@ -6,4 +6,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 experiments/mapf_sweep/
-
+wandb/
+.env
+.env.*
+!.env.example

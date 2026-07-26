@@ -51,6 +51,31 @@ replay buffer uses about 1.5 GiB of host RAM for current and next `uint8`
 observations. The batch size of 128 is a portable starting point; benchmark a
 run-specific override before increasing it for a larger accelerator.
 
+The long run uses `deep-learning-wandb` through the local `sampled_wandb`
+callback. It retains the integration's normal configuration, run metadata,
+evaluation metrics, and `global_step` semantics while sampling training
+episodes and DQN updates so a two-billion-step job does not produce millions
+of nearly adjacent API calls. Set `WANDB_API_KEY` in the shell before
+launching; `.env.example` documents the expected variable but is not loaded
+automatically.
+
+Evaluate a saved checkpoint on three held-out procedural mazes and export both
+GIF and MP4 trajectories:
+
+```bash
+uv run python scripts/evaluate_pathfinding_checkpoint.py \
+  --checkpoint artifacts/runs/pathfinding_vit_2b/final/checkpoints/latest.pth
+```
+
+The evaluator loads only the online ViT weights, performs no pretrained-weight
+download, selects actions deterministically, and reports returns, success,
+distance, path length, shortest-path lower bound, and collisions in
+`artifacts/pathfinding_evaluation/evaluation.json`. Its default media is
+512×512 for manageable files; pass `--render-size 1000` to preserve the full
+logical grid resolution. It records every fourth environment frame by default
+to bound encoder memory and adjusts playback FPS to preserve elapsed-time
+semantics; use `--frame-stride 1` for every step.
+
 The training CLI writes artifacts beneath
 `artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
 

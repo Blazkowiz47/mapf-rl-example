@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "deep-learning-core",
     "deep-learning-robotics",
+    "deep-learning-wandb>=0.0.13,<0.1",
     "imageio>=2.34",
     "numpy",
     "opencv-python-headless",
@@ -34,3 +35,4 @@ sources = ["src"]
 [tool.uv.sources]
 deep-learning-core = { path = "../dl-core", editable = true }
 deep-learning-robotics = { path = "../dl-robotics", editable = true }
+deep-learning-wandb = { path = "../dl-wandb", editable = true }

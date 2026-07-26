@@ -10,6 +10,11 @@ experiment:
   name: pathfinding_vit_2b
   description: "ViT-B/16 DQN on procedural single-agent pathfinding"
 
+tracking:
+  backend: wandb
+  experiment_name: mapf-rl-example
+  run_name: pathfinding-vit-2b
+
 accelerator:
   type: single_gpu
   mixed_precision: bf16
@@ -95,3 +100,16 @@ episode_managers:
 callbacks:
   local_metric_tracker:
     log_frequency: 100
+  sampled_wandb:
+    project: mapf-rl-example
+    job_type: train
+    tags:
+      - dl-core
+      - dl-robotics
+      - dqn
+      - vit
+      - pathfinding
+    notes: "One ViT-B/16 DQN run over two billion procedural transitions"
+    log_config: true
+    episode_log_frequency: 1000
+    update_log_frequency: 100
