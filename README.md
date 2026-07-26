@@ -60,8 +60,8 @@ launching; `.env.example` documents the expected variable but is not loaded
 automatically.
 
 The first 100 DQN updates are logged densely so loss, Q-value, target-Q, replay,
-epsilon, weight-norm, and gradient-norm curves appear immediately; later
-updates are sampled. W&B watches histograms for trainable modules every 500
+epsilon, and weight-norm curves appear immediately; later updates are sampled.
+W&B watches weight and gradient histograms for trainable modules every 500
 updates rather than serializing the complete frozen ViT repeatedly. RL has no
 classification-accuracy metric, so policy quality is represented by episode
 success and path efficiency. The pathfinding episode manager logs total path

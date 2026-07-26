@@ -148,23 +148,6 @@ class SampledWandbCallback(WandbCallback):
                     .sqrt()
                     .item()
                 )
-                gradients = [
-                    parameter.grad.detach()
-                    for parameter in trainable_parameters
-                    if parameter.grad is not None
-                ]
-                if gradients:
-                    update_logs["model/gradient_l2_norm"] = float(
-                        torch.stack(
-                            [
-                                gradient.float().square().sum()
-                                for gradient in gradients
-                            ]
-                        )
-                        .sum()
-                        .sqrt()
-                        .item()
-                    )
             super()._on_update_end(update, update_logs)
 
 
