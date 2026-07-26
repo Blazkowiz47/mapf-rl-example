@@ -15,6 +15,8 @@ This is a standalone consumer project showing how
 - dependencies require `deep-learning-core>=0.0.28,<0.1` and the published
   `deep-learning-robotics>=0.0.3,<0.1`
 
+Previous versions are recorded in the [release history](RELEASES.md).
+
 The example uses centralized DQN for two actors that must exchange opposite
 corners of a 5×5 grid. Four worlds collect experience in parallel, while a
 separate scalar world performs deterministic evaluation. The robotics episode
