@@ -4,6 +4,17 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
+## What's New in 0.2.0?
+
+- local code now follows the generated component layout for environments,
+  models, callbacks, episode managers, interaction rules, and scenarios
+- three YAML-selectable interaction rules demonstrate default exclusive cells,
+  index-based priority, and intentionally non-physical pass-through actors
+- classical reports and visualizations live under `scripts/`, with script flow
+  kept directly in `main()`
+- dependencies require `deep-learning-core>=0.0.28,<0.1` and the published
+  `deep-learning-robotics>=0.0.3,<0.1`
+
 The example uses centralized DQN for two actors that must exchange opposite
 corners of a 5×5 grid. Four worlds collect experience in parallel, while a
 separate scalar world performs deterministic evaluation. The robotics episode

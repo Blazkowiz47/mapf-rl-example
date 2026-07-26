@@ -303,7 +303,7 @@ provides-extras = ["azure", "mlflow", "wandb", "dev"]
 
 [[package]]
 name = "deep-learning-robotics"
-version = "0.0.2"
+version = "0.0.3"
 source = { editable = "../dl-robotics" }
 dependencies = [
     { name = "deep-learning-core" },
@@ -476,7 +476,7 @@ wheels = [
 
 [[package]]
 name = "mapf-rl-example"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },

@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mapf-rl-example"
-version = "0.1.0"
+version = "0.2.0"
 description = "Vector DQN example for a two-agent MAPF problem."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "deep-learning-core",
-    "deep-learning-robotics",
+    "deep-learning-core>=0.0.28,<0.1",
+    "deep-learning-robotics>=0.0.3,<0.1",
     "deep-learning-wandb>=0.0.13,<0.1",
     "imageio>=2.34",
     "numpy",
