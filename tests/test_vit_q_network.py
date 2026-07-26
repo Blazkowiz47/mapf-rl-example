@@ -180,6 +180,6 @@ def test_pathfinding_config_defines_the_requested_long_run() -> None:
     assert config["trainer"]["dqn"]["buffer_size"] == 4096
     assert config["trainer"]["dqn"]["batch_size"] == 128
     assert config["tracking"]["backend"] == "wandb"
-    assert config["callbacks"]["sampled_wandb"][
-        "episode_log_frequency"
-    ] == 1000
+    assert "pathfinding" in config["episode_managers"]
+    assert config["callbacks"]["sampled_wandb"]["dense_update_count"] == 100
+    assert config["callbacks"]["sampled_wandb"]["watch_log_frequency"] == 500

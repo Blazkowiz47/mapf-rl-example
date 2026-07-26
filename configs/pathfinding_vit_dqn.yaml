@@ -87,7 +87,7 @@ trainer:
     checkpoint_replay_buffer: false
 
 episode_managers:
-  robotics:
+  pathfinding:
     capture_phases: []
     info_keys:
       - distance_to_goal
@@ -113,3 +113,5 @@ callbacks:
     log_config: true
     episode_log_frequency: 1000
     update_log_frequency: 100
+    dense_update_count: 100
+    watch_log_frequency: 500

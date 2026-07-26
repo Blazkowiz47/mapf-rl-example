@@ -59,6 +59,15 @@ of nearly adjacent API calls. Set `WANDB_API_KEY` in the shell before
 launching; `.env.example` documents the expected variable but is not loaded
 automatically.
 
+The first 100 DQN updates are logged densely so loss, Q-value, target-Q, replay,
+epsilon, weight-norm, and gradient-norm curves appear immediately; later
+updates are sampled. W&B watches histograms for trainable modules every 500
+updates rather than serializing the complete frozen ViT repeatedly. RL has no
+classification-accuracy metric, so policy quality is represented by episode
+success and path efficiency. The pathfinding episode manager logs total path
+steps, expected Manhattan shortest path, their difference, excess path length,
+remaining distance, and efficiency alongside the normal robotics metrics.
+
 Evaluate a saved checkpoint on three held-out procedural mazes and export both
 GIF and MP4 trajectories:
 
