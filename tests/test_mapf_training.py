@@ -18,13 +18,23 @@ from dl_robotics import (
     dijkstra_path,
 )
 
-from mapf_baselines import main as print_baselines
+import rules  # noqa: F401
+from scenarios import make_two_agent_crossing_scenario
 
 
-def test_classical_baseline_report(capsys) -> None:
-    print_baselines()
-
-    report = json.loads(capsys.readouterr().out)
+def test_classical_baseline_report() -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(project_root / "scripts" / "print_classical_baselines.py"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=project_root,
+    )
+    report = json.loads(result.stdout)
 
     assert report["scenario"] == "two_agent_crossing"
     assert report["makespan_lower_bound"] == 8
@@ -101,9 +111,11 @@ def test_crossing_scenario_has_a_collision_free_solution() -> None:
     config = yaml.safe_load(
         (project_root / "configs" / "mapf_dqn.yaml").read_text()
     )
-    scenario = GridScenario.from_config(
+    configured_scenario = GridScenario.from_config(
         config["evaluation_environment"]["scenario"]
     )
+    scenario = make_two_agent_crossing_scenario()
+    assert scenario == configured_scenario
     shortest_moves = []
     for start, goal in zip(scenario.starts, scenario.goals, strict=True):
         planner_moves = {

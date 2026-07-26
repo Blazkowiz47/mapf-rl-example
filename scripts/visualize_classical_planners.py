@@ -25,7 +25,6 @@ from numpy.typing import NDArray
 
 Planner = Callable[[GridScenario, Coordinate, Coordinate], GridPath]
 IntArray = NDArray[np.int32]
-UInt8Image = NDArray[np.uint8]
 _DIRECTIONS = ((-1, 0), (0, 1), (1, 0), (0, -1))
 _COLORS = (
     (37, 99, 235),
@@ -43,10 +42,6 @@ _ACTION_BY_DELTA = {
 
 def main(argv: Sequence[str] | None = None) -> None:
     """Create streamed A*, Dijkstra, BFS, and DFS animations."""
-    _main(argv)
-
-
-def _main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Animate three simultaneous actors in a seeded procedural maze."
@@ -146,12 +141,34 @@ def _main(argv: Sequence[str] | None = None) -> None:
         target_step = int(
             rng.integers(minimum_traversal, maximum_traversal)
         )
-        goal = _select_dfs_goal(
-            blocked,
-            start,
-            target_step,
-            forbidden,
-        )
+        frontier = [start]
+        visited = {start}
+        traversed = 0
+        goal = None
+        while frontier:
+            current = frontier.pop()
+            traversed += 1
+            if traversed >= target_step and current not in forbidden:
+                goal = current
+                break
+            neighbors = []
+            for row_delta, column_delta in _DIRECTIONS:
+                neighbor = (
+                    current[0] + row_delta,
+                    current[1] + column_delta,
+                )
+                if (
+                    0 <= neighbor[0] < blocked.shape[0]
+                    and 0 <= neighbor[1] < blocked.shape[1]
+                    and not blocked[neighbor]
+                    and neighbor not in visited
+                ):
+                    neighbors.append(neighbor)
+            for neighbor in reversed(neighbors):
+                visited.add(neighbor)
+                frontier.append(neighbor)
+        if goal is None:
+            raise RuntimeError(f"No reachable goal found from {start}")
         goals.append(goal)
         forbidden.add(goal)
 
@@ -196,12 +213,99 @@ def _main(argv: Sequence[str] | None = None) -> None:
                 strict=True,
             )
         )
-        delays = _schedule_paths(paths)
-        positions, collisions = _execute_schedule(
-            scenario,
-            paths,
-            delays,
+        delays = [0]
+        maximum_delay = sum(len(path) - 1 for path in paths)
+        for path in paths[1:]:
+            for delay in range(maximum_delay + 1):
+                has_conflict = False
+                for other_path, other_delay in zip(
+                    paths[: len(delays)],
+                    delays,
+                    strict=True,
+                ):
+                    horizon = max(
+                        delay + len(path),
+                        other_delay + len(other_path),
+                    )
+                    for step in range(horizon):
+                        position = _position_at(path, delay, step)
+                        other_position = _position_at(
+                            other_path,
+                            other_delay,
+                            step,
+                        )
+                        if position == other_position:
+                            has_conflict = True
+                            break
+                        if step == 0:
+                            continue
+                        previous = _position_at(path, delay, step - 1)
+                        other_previous = _position_at(
+                            other_path,
+                            other_delay,
+                            step - 1,
+                        )
+                        if (
+                            position == other_previous
+                            and other_position == previous
+                        ):
+                            has_conflict = True
+                            break
+                    if has_conflict:
+                        break
+                if not has_conflict:
+                    delays.append(delay)
+                    break
+            else:
+                raise RuntimeError(
+                    "No collision-free start-delay schedule was found"
+                )
+
+        horizon = max(
+            delay + len(path) - 1
+            for path, delay in zip(paths, delays, strict=True)
         )
+        world = GridWorldBatch(scenario)
+        positions = np.empty(
+            (horizon + 1, scenario.num_agents, 2),
+            dtype=np.int32,
+        )
+        collisions = 0
+        for step in range(horizon + 1):
+            expected = np.asarray(
+                [
+                    _position_at(path, delay, step)
+                    for path, delay in zip(paths, delays, strict=True)
+                ],
+                dtype=np.int32,
+            )
+            if not np.array_equal(world.positions[0], expected):
+                raise RuntimeError(
+                    "Schedule diverged from planned positions "
+                    f"at step {step}"
+                )
+            positions[step] = expected
+            if step == horizon:
+                continue
+            next_positions = np.asarray(
+                [
+                    _position_at(path, delay, step + 1)
+                    for path, delay in zip(paths, delays, strict=True)
+                ],
+                dtype=np.int32,
+            )
+            deltas = next_positions - expected
+            actions = np.asarray(
+                [_ACTION_BY_DELTA[tuple(delta)] for delta in deltas],
+                dtype=np.int32,
+            )
+            events = world.step(actions[np.newaxis, :])
+            collisions += int(events.collisions[0])
+        if collisions or not world.reached[0].all():
+            raise RuntimeError(
+                "The simultaneous schedule did not complete collision-free"
+            )
+
         plans[name] = paths
         schedules[name] = positions
         report["algorithms"][name] = {
@@ -230,15 +334,30 @@ def _main(argv: Sequence[str] | None = None) -> None:
         dtype=np.uint8,
     )
     base[wall_pixels] = (42, 52, 68)
-    route_bases = {
-        name: _render_route_base(
-            base,
-            scenario,
-            paths,
-            args.render_size,
-        )
-        for name, paths in plans.items()
-    }
+    route_bases = {}
+    route_scale = (args.render_size - 1) / (scenario.width - 1)
+    for name, paths in plans.items():
+        route_base = base.copy()
+        for agent_index, path in enumerate(paths):
+            points = np.asarray(
+                [
+                    (
+                        round(column * route_scale),
+                        round(row * route_scale),
+                    )
+                    for row, column in path
+                ],
+                dtype=np.int32,
+            )
+            cv2.polylines(
+                route_base,
+                [points],
+                False,
+                _COLORS[agent_index],
+                max(1, args.render_size // 500),
+                cv2.LINE_AA,
+            )
+        route_bases[name] = route_base
 
     output_formats = (
         ("gif", "mp4") if args.format == "both" else (args.format,)
@@ -248,11 +367,20 @@ def _main(argv: Sequence[str] | None = None) -> None:
     for name in (*planners, "comparison"):
         for suffix in output_formats:
             output_path = args.output_dir / f"{name}.{suffix}"
-            writers[(name, suffix)] = _open_writer(
-                output_path,
-                suffix,
-                args.fps,
-            )
+            if suffix == "gif":
+                writers[(name, suffix)] = imageio.get_writer(
+                    output_path,
+                    mode="I",
+                    duration=1000.0 / args.fps,
+                    loop=0,
+                )
+            else:
+                writers[(name, suffix)] = imageio.get_writer(
+                    output_path,
+                    fps=args.fps,
+                    codec="libx264",
+                    macro_block_size=1,
+                )
             report["files"].append(str(output_path))
 
     schedule_steps = max(
@@ -273,19 +401,101 @@ def _main(argv: Sequence[str] | None = None) -> None:
             for name, (label, _) in planners.items():
                 positions = schedules[name]
                 algorithm_step = min(int(step), len(positions) - 1)
-                frames[name] = _render_frame(
-                    route_bases[name],
-                    scenario,
-                    positions[algorithm_step],
-                    label,
-                    algorithm_step,
-                    len(positions) - 1,
-                    args.render_size,
-                    args.seed,
+                frame = route_bases[name].copy()
+                scale = (args.render_size - 1) / (scenario.width - 1)
+                radius = max(4, args.render_size // 100)
+                for agent_index, (position, goal) in enumerate(
+                    zip(
+                        positions[algorithm_step],
+                        scenario.goals,
+                        strict=True,
+                    )
+                ):
+                    goal_center = (
+                        round(goal[1] * scale),
+                        round(goal[0] * scale),
+                    )
+                    cv2.rectangle(
+                        frame,
+                        (
+                            goal_center[0] - radius,
+                            goal_center[1] - radius,
+                        ),
+                        (
+                            goal_center[0] + radius,
+                            goal_center[1] + radius,
+                        ),
+                        _COLORS[agent_index],
+                        max(2, radius // 3),
+                    )
+                    center = (
+                        round(int(position[1]) * scale),
+                        round(int(position[0]) * scale),
+                    )
+                    cv2.circle(
+                        frame,
+                        center,
+                        radius,
+                        _COLORS[agent_index],
+                        -1,
+                        cv2.LINE_AA,
+                    )
+                    cv2.putText(
+                        frame,
+                        str(agent_index),
+                        (
+                            center[0] - radius // 3,
+                            center[1] + radius // 3,
+                        ),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        max(0.35, args.render_size / 1800),
+                        (255, 255, 255),
+                        max(1, radius // 4),
+                        cv2.LINE_AA,
+                    )
+                title_height = max(36, args.render_size // 18)
+                titled = np.full(
+                    (
+                        args.render_size + title_height,
+                        args.render_size,
+                        3,
+                    ),
+                    248,
+                    dtype=np.uint8,
                 )
+                titled[title_height:] = frame
+                cv2.putText(
+                    titled,
+                    (
+                        f"{label} | {scenario.width}x{scenario.height} | "
+                        f"seed {args.seed} | "
+                        f"t={algorithm_step}/{len(positions) - 1}"
+                    ),
+                    (10, title_height * 2 // 3),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    max(0.42, args.render_size / 1500),
+                    (30, 41, 59),
+                    max(1, args.render_size // 700),
+                    cv2.LINE_AA,
+                )
+                frames[name] = titled
                 for suffix in output_formats:
+                    output_frame = frames[name]
+                    if suffix == "mp4":
+                        height_padding = output_frame.shape[0] % 2
+                        width_padding = output_frame.shape[1] % 2
+                        if height_padding or width_padding:
+                            output_frame = np.pad(
+                                output_frame,
+                                (
+                                    (0, height_padding),
+                                    (0, width_padding),
+                                    (0, 0),
+                                ),
+                                mode="edge",
+                            )
                     writers[(name, suffix)].append_data(
-                        _prepare_frame(frames[name], suffix)
+                        output_frame
                     )
 
             comparison = np.concatenate(
@@ -302,8 +512,22 @@ def _main(argv: Sequence[str] | None = None) -> None:
                 axis=0,
             )
             for suffix in output_formats:
+                output_frame = comparison
+                if suffix == "mp4":
+                    height_padding = output_frame.shape[0] % 2
+                    width_padding = output_frame.shape[1] % 2
+                    if height_padding or width_padding:
+                        output_frame = np.pad(
+                            output_frame,
+                            (
+                                (0, height_padding),
+                                (0, width_padding),
+                                (0, 0),
+                            ),
+                            mode="edge",
+                        )
                 writers[("comparison", suffix)].append_data(
-                    _prepare_frame(comparison, suffix)
+                    output_frame
                 )
     finally:
         for writer in writers.values():
@@ -317,95 +541,6 @@ def _main(argv: Sequence[str] | None = None) -> None:
     print(json.dumps(report, indent=2))
 
 
-def _select_dfs_goal(
-    blocked: NDArray[np.bool_],
-    start: Coordinate,
-    target_step: int,
-    forbidden: set[Coordinate],
-) -> Coordinate:
-    height, width = blocked.shape
-    frontier = [start]
-    visited = {start}
-    traversed = 0
-    while frontier:
-        current = frontier.pop()
-        traversed += 1
-        if traversed >= target_step and current not in forbidden:
-            return current
-        neighbors = []
-        for row_delta, column_delta in _DIRECTIONS:
-            neighbor = (
-                current[0] + row_delta,
-                current[1] + column_delta,
-            )
-            if (
-                0 <= neighbor[0] < height
-                and 0 <= neighbor[1] < width
-                and not blocked[neighbor]
-                and neighbor not in visited
-            ):
-                neighbors.append(neighbor)
-        for neighbor in reversed(neighbors):
-            visited.add(neighbor)
-            frontier.append(neighbor)
-    raise RuntimeError(f"No reachable goal found from {start}")
-
-
-def _schedule_paths(paths: tuple[GridPath, ...]) -> list[int]:
-    delays = [0]
-    maximum_delay = sum(len(path) - 1 for path in paths)
-    for path in paths[1:]:
-        for delay in range(maximum_delay + 1):
-            if all(
-                not _paths_conflict(
-                    path,
-                    delay,
-                    other_path,
-                    other_delay,
-                )
-                for other_path, other_delay in zip(
-                    paths[: len(delays)],
-                    delays,
-                    strict=True,
-                )
-            ):
-                delays.append(delay)
-                break
-        else:
-            raise RuntimeError(
-                "No collision-free start-delay schedule was found"
-            )
-    return delays
-
-
-def _paths_conflict(
-    path: GridPath,
-    delay: int,
-    other_path: GridPath,
-    other_delay: int,
-) -> bool:
-    horizon = max(
-        delay + len(path),
-        other_delay + len(other_path),
-    )
-    for step in range(horizon):
-        position = _position_at(path, delay, step)
-        other_position = _position_at(other_path, other_delay, step)
-        if position == other_position:
-            return True
-        if step == 0:
-            continue
-        previous = _position_at(path, delay, step - 1)
-        other_previous = _position_at(
-            other_path,
-            other_delay,
-            step - 1,
-        )
-        if position == other_previous and other_position == previous:
-            return True
-    return False
-
-
 def _position_at(
     path: GridPath,
     delay: int,
@@ -414,208 +549,6 @@ def _position_at(
     if step <= delay:
         return path[0]
     return path[min(step - delay, len(path) - 1)]
-
-
-def _execute_schedule(
-    scenario: GridScenario,
-    paths: tuple[GridPath, ...],
-    delays: list[int],
-) -> tuple[IntArray, int]:
-    horizon = max(
-        delay + len(path) - 1
-        for path, delay in zip(paths, delays, strict=True)
-    )
-    world = GridWorldBatch(scenario)
-    positions = np.empty(
-        (horizon + 1, scenario.num_agents, 2),
-        dtype=np.int32,
-    )
-    collisions = 0
-    for step in range(horizon + 1):
-        expected = np.asarray(
-            [
-                _position_at(path, delay, step)
-                for path, delay in zip(paths, delays, strict=True)
-            ],
-            dtype=np.int32,
-        )
-        if not np.array_equal(world.positions[0], expected):
-            raise RuntimeError(
-                f"Schedule diverged from planned positions at step {step}"
-            )
-        positions[step] = expected
-        if step == horizon:
-            continue
-        next_positions = np.asarray(
-            [
-                _position_at(path, delay, step + 1)
-                for path, delay in zip(paths, delays, strict=True)
-            ],
-            dtype=np.int32,
-        )
-        deltas = next_positions - expected
-        actions = np.asarray(
-            [_ACTION_BY_DELTA[tuple(delta)] for delta in deltas],
-            dtype=np.int32,
-        )
-        events = world.step(actions[np.newaxis, :])
-        collisions += int(events.collisions[0])
-
-    if collisions or not world.reached[0].all():
-        raise RuntimeError(
-            "The simultaneous schedule did not complete collision-free"
-        )
-    return positions, collisions
-
-
-def _render_route_base(
-    base: UInt8Image,
-    scenario: GridScenario,
-    paths: tuple[GridPath, ...],
-    render_size: int,
-) -> UInt8Image:
-    frame = base.copy()
-    scale = (render_size - 1) / (scenario.width - 1)
-    for agent_index, path in enumerate(paths):
-        points = np.asarray(
-            [
-                (
-                    round(column * scale),
-                    round(row * scale),
-                )
-                for row, column in path
-            ],
-            dtype=np.int32,
-        )
-        cv2.polylines(
-            frame,
-            [points],
-            False,
-            _COLORS[agent_index],
-            max(1, render_size // 500),
-            cv2.LINE_AA,
-        )
-    return frame
-
-
-def _render_frame(
-    route_base: UInt8Image,
-    scenario: GridScenario,
-    positions: IntArray,
-    label: str,
-    step: int,
-    final_step: int,
-    render_size: int,
-    seed: int,
-) -> UInt8Image:
-    frame = route_base.copy()
-    scale = (render_size - 1) / (scenario.width - 1)
-    radius = max(4, render_size // 100)
-    for agent_index, (position, goal) in enumerate(
-        zip(positions, scenario.goals, strict=True)
-    ):
-        goal_center = (
-            round(goal[1] * scale),
-            round(goal[0] * scale),
-        )
-        cv2.rectangle(
-            frame,
-            (
-                goal_center[0] - radius,
-                goal_center[1] - radius,
-            ),
-            (
-                goal_center[0] + radius,
-                goal_center[1] + radius,
-            ),
-            _COLORS[agent_index],
-            max(2, radius // 3),
-        )
-        center = (
-            round(int(position[1]) * scale),
-            round(int(position[0]) * scale),
-        )
-        cv2.circle(
-            frame,
-            center,
-            radius,
-            _COLORS[agent_index],
-            -1,
-            cv2.LINE_AA,
-        )
-        cv2.putText(
-            frame,
-            str(agent_index),
-            (center[0] - radius // 3, center[1] + radius // 3),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            max(0.35, render_size / 1800),
-            (255, 255, 255),
-            max(1, radius // 4),
-            cv2.LINE_AA,
-        )
-
-    title_height = max(36, render_size // 18)
-    titled = np.full(
-        (render_size + title_height, render_size, 3),
-        248,
-        dtype=np.uint8,
-    )
-    titled[title_height:] = frame
-    cv2.putText(
-        titled,
-        (
-            f"{label} | {scenario.width}x{scenario.height} | "
-            f"seed {seed} | t={step}/{final_step}"
-        ),
-        (10, title_height * 2 // 3),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        max(0.42, render_size / 1500),
-        (30, 41, 59),
-        max(1, render_size // 700),
-        cv2.LINE_AA,
-    )
-    return titled
-
-
-def _open_writer(
-    path: Path,
-    suffix: str,
-    fps: int,
-):
-    if suffix == "gif":
-        return imageio.get_writer(
-            path,
-            mode="I",
-            duration=1000.0 / fps,
-            loop=0,
-        )
-    return imageio.get_writer(
-        path,
-        fps=fps,
-        codec="libx264",
-        macro_block_size=1,
-    )
-
-
-def _prepare_frame(
-    frame: UInt8Image,
-    suffix: str,
-) -> UInt8Image:
-    if suffix != "mp4":
-        return frame
-    height_padding = frame.shape[0] % 2
-    width_padding = frame.shape[1] % 2
-    if not height_padding and not width_padding:
-        return frame
-    return np.pad(
-        frame,
-        (
-            (0, height_padding),
-            (0, width_padding),
-            (0, 0),
-        ),
-        mode="edge",
-    )
 
 
 if __name__ == "__main__":

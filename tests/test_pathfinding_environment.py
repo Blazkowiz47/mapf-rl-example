@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from pathfinding_environment import ProceduralPathfindingEnv
+from environments import ProceduralPathfindingEnv
 
 
 def test_procedural_environment_is_seeded_and_returns_rgb_grids() -> None:

@@ -11,8 +11,8 @@ import torch
 import yaml
 from dl_robotics import write_animation
 
-from pathfinding_environment import ProceduralPathfindingEnv
-from vit_q_network import ViTB16QNetwork
+from environments import ProceduralPathfindingEnv
+from models import ViTB16QNetwork
 
 
 def main() -> None:

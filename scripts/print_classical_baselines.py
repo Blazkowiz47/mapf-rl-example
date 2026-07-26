@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from importlib.resources import files
 from pathlib import Path
 
 import yaml
@@ -18,21 +17,9 @@ from dl_robotics import (
 
 def main() -> None:
     """Print paths and exact static lower bounds as JSON."""
-    _main()
-
-
-def _main() -> None:
     project_root = Path(__file__).resolve().parents[1]
     config_path = project_root / "configs" / "mapf_dqn.yaml"
-    if config_path.is_file():
-        config_text = config_path.read_text()
-    else:
-        config_text = (
-            files("mapf_baselines_data")
-            .joinpath("mapf_dqn.yaml")
-            .read_text(encoding="utf-8")
-        )
-    config = yaml.safe_load(config_text)
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     scenario = GridScenario.from_config(
         config["evaluation_environment"]["scenario"]
     )

@@ -7,8 +7,8 @@ import torch
 from dl_core.core import EpisodeContext, EpisodeRecord, EpisodeResult
 
 import wandb
-from pathfinding_episode_manager import PathfindingEpisodeManager
-from pathfinding_wandb_callback import SampledWandbCallback
+from callbacks import SampledWandbCallback
+from episode_managers import PathfindingEpisodeManager
 
 
 def test_sampled_wandb_watches_model_and_limits_high_frequency_events(

@@ -12,9 +12,8 @@ from torchvision.models.vision_transformer import (
     interpolate_embeddings as interpolate_vit_embeddings,
 )
 
-import pathfinding_environment  # noqa: F401
-import vit_q_network
-from vit_q_network import ViTB16QNetwork
+import environments  # noqa: F401
+from models import ViTB16QNetwork, vit_q_network
 
 
 def test_vit_q_network_returns_four_q_values() -> None:
