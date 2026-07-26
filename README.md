@@ -25,18 +25,31 @@ observation, info = environment.reset(seed=2026)
 full_grid = environment.get_grid_rgb()  # [1000, 1000, 3]
 ```
 
+The `vit_b_16_q_network` model accepts the resized HWC `uint8` observation,
+normalizes it with ImageNet statistics, and emits four unnormalized Q-values
+for up, down, left, and right. It starts from ImageNet-1K weights adapted to
+the 256×256 positional embedding, fine-tunes the final two transformer blocks,
+and leaves the earlier encoder frozen.
+
 ## Run
 
 ```bash
 uv sync --extra dev
 uv run dl-run --config configs/mapf_dqn.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml
+uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
 uv run pytest
 ```
 
 The short 64-transition configuration is an integration example, not a
 convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
-learning experiment.
+learning experiment. `pathfinding_vit_dqn.yaml` is the separate long-running
+GPU configuration: 32 environments collect procedural tasks in parallel, the
+replay buffer retains 256×256 RGB observations, and DQN is budgeted for the
+requested two billion environment transitions. The default 4096-transition
+replay buffer uses about 1.5 GiB of host RAM for current and next `uint8`
+observations. The batch size of 128 is a portable starting point; benchmark a
+run-specific override before increasing it for a larger accelerator.
 
 The training CLI writes artifacts beneath
 `artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:

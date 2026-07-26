@@ -14,6 +14,7 @@ dependencies = [
     "imageio>=2.34",
     "numpy",
     "opencv-python-headless",
+    "torchvision",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +29,7 @@ sources = ["src"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "configs/mapf_dqn.yaml" = "mapf_baselines_data/mapf_dqn.yaml"
+"configs/pathfinding_vit_dqn.yaml" = "mapf_baselines_data/pathfinding_vit_dqn.yaml"
 
 [tool.uv.sources]
 deep-learning-core = { path = "../dl-core", editable = true }

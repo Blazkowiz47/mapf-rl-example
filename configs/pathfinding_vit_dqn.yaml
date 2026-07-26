@@ -1,0 +1,97 @@
+seed: 2026
+deterministic: false
+
+runtime:
+  output_dir: artifacts
+  name: pathfinding_vit_2b
+  log_level: INFO
+
+experiment:
+  name: pathfinding_vit_2b
+  description: "ViT-B/16 DQN on procedural single-agent pathfinding"
+
+accelerator:
+  type: single_gpu
+  mixed_precision: bf16
+  gradient_accumulation_steps: 1
+  max_grad_norm: 10.0
+
+environment:
+  name: gymnasium_vector
+  id: ProceduralPathfinding-v0
+  num_envs: 32
+  vectorization_mode: sync
+  kwargs:
+    grid_size: 1000
+    observation_size: 256
+    max_steps: 128
+    move_stride: 8
+    wall_count: 100
+    minimum_goal_distance: 160
+    maximum_goal_distance: 480
+    step_reward: -0.01
+    progress_reward: 0.02
+    collision_reward: -0.25
+    goal_reward: 5.0
+
+evaluation_environment:
+  name: gymnasium
+  id: ProceduralPathfinding-v0
+  kwargs:
+    grid_size: 1000
+    observation_size: 256
+    max_steps: 128
+    move_stride: 8
+    wall_count: 100
+    minimum_goal_distance: 160
+    maximum_goal_distance: 480
+    step_reward: -0.01
+    progress_reward: 0.02
+    collision_reward: -0.25
+    goal_reward: 5.0
+
+models:
+  q_network:
+    name: vit_b_16_q_network
+    pretrained: true
+    trainable_blocks: 2
+
+optimizers:
+  name: adamw
+  lr: 0.00003
+  weight_decay: 0.01
+
+trainer:
+  dqn:
+    total_timesteps: 2000000000
+    max_episode_steps: 128
+    evaluation_frequency: 200000
+    evaluation_episodes: 10
+    checkpoint_frequency: 2000000
+    gamma: 0.99
+    buffer_size: 4096
+    batch_size: 128
+    learning_starts: 4096
+    train_frequency: 256
+    gradient_steps: 1
+    target_update_frequency: 100000
+    double_dqn: true
+    epsilon_start: 1.0
+    epsilon_end: 0.05
+    epsilon_decay_steps: 50000000
+    checkpoint_replay_buffer: false
+
+episode_managers:
+  robotics:
+    capture_phases: []
+    info_keys:
+      - distance_to_goal
+      - shortest_path_length
+      - path_length
+      - excess_path_length
+      - episode_collisions
+    media_format: none
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 100
