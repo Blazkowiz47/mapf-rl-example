@@ -255,6 +255,15 @@ final positions were closer to the goal than their starting positions—but it
 does not yet solve the task reliably and should be treated as a research
 checkpoint rather than a converged policy.
 
+For example, on held-out seed 40019 the solid red agent reduced its Manhattan
+distance to the hollow blue goal from 279 to 23 pixels—a 256-pixel
+improvement—with zero collisions and a return of 3.84. The episode still
+reached its 128-step limit rather than the goal, so this is evidence of moving
+closer rather than a claimed success. The animation samples every eighth
+environment frame:
+
+![The released ViT-DQN policy moving the red agent closer to the hollow blue goal on held-out seed 40019](docs/media/pathfinding/heldout_seed_40019.gif)
+
 There is also an important constraint in this experiment: actions move the
 agent by eight logical pixels, while starts and goals were sampled at arbitrary
 pixel coordinates. Without a collision shortening an action, direct exact
