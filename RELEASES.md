@@ -3,6 +3,14 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## 0.4.0
+
+- the ViT-DQN reference run balances 20 environment lanes over two
+  inference-only actor copies and separate CUDA streams
+- actor snapshots refresh every 25 optimizer steps, with policy version and lag
+  available through the existing W&B update metrics
+- the example requires `deep-learning-core>=0.0.31,<0.1`
+
 ## 0.3.0
 
 - the ViT-DQN reference run uses 20 asynchronous environment processes and a

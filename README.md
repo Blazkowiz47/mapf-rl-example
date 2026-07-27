@@ -4,13 +4,15 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
-## What's New in 0.4.0?
+## What's New in 0.5.0?
 
-- the ViT-DQN reference run balances 32 environment lanes over two
-  inference-only actor copies and separate CUDA streams
-- actor snapshots refresh every 25 optimizer steps, with policy version and lag
-  available through the existing W&B update metrics
-- the example requires `deep-learning-core>=0.0.31,<0.1`
+- reproducible configs compare the 32-environment pipelined baseline, a larger
+  replay batch, and selected-model PyTorch compilation
+- compiled ViT learning keeps variable DQN inference and mutable W&B hooks out
+  of the learner graph while retaining sampled weight histograms
+- phase timings make environment, replay, and learner throughput comparisons
+  visible in W&B
+- the example requires `deep-learning-core>=0.0.32,<0.1`
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
