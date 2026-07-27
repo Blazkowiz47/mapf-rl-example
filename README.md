@@ -210,12 +210,17 @@ success and path efficiency. The pathfinding episode manager logs total path
 steps, expected Manhattan shortest path, their difference, excess path length,
 remaining distance, and efficiency alongside the normal robotics metrics.
 
-Evaluate a saved checkpoint on three held-out procedural mazes and export both
-GIF and MP4 trajectories:
+Evaluate the released checkpoint on three held-out procedural mazes and export
+both GIF and MP4 trajectories:
 
 ```bash
+mkdir -p artifacts/checkpoints
+curl -L \
+  https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m/pathfinding_vit_2m_best.pth \
+  -o artifacts/checkpoints/pathfinding_vit_2m_best.pth
 uv run python scripts/evaluate_pathfinding_checkpoint.py \
-  --checkpoint artifacts/sweeps/pathfinding_vit_dqn/pathfinding_vit_2m_32_envs_b512_2_actor_copies_async/final/checkpoints/latest.pth
+  --config configs/pathfinding_vit_compiled.yaml \
+  --checkpoint artifacts/checkpoints/pathfinding_vit_2m_best.pth
 ```
 
 The evaluator loads only the online ViT weights, performs no pretrained-weight
@@ -226,6 +231,40 @@ distance, path length, shortest-path lower bound, and collisions in
 logical grid resolution. It records every fourth environment frame by default
 to bound encoder memory and adjusts playback FPS to preserve elapsed-time
 semantics; use `--frame-stride 1` for every step.
+
+### Released 2M-transition checkpoint
+
+The [released reference checkpoint](https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m/pathfinding_vit_2m_best.pth)
+is the final resumable ViT-DQN trainer checkpoint from the 256-environment
+compiled run. It was selected by comparing the untrained model and three
+training checkpoints on the same 20 unseen procedural mazes (seeds
+40000–40019), using deterministic actions and 128 steps per episode:
+
+| Checkpoint | Success | Mean return | Mean final distance | Mean distance reduction | Collisions |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Untrained | 0/20 | -26.365 | 385.60 | -111.10 | 1,829 |
+| 500,224 transitions | 0/20 | -13.298 | **132.90** | **141.60** | 1,188 |
+| 1,300,224 transitions | 0/20 | -9.661 | 139.15 | 135.35 | 887 |
+| **2,000,000 transitions** | 0/20 | **-3.359** | 166.55 | 107.95 | **339** |
+
+The final model was selected because it has the highest held-out mean return,
+the training objective, and the fewest collisions. The 500,224-transition
+checkpoint performs best on final distance and distance reduction. The
+released model still demonstrates a learned goal-directed signal—18 of its 20
+final positions were closer to the goal than their starting positions—but it
+does not yet solve the task reliably and should be treated as a research
+checkpoint rather than a converged policy.
+
+There is also an important constraint in this experiment: actions move the
+agent by eight logical pixels, while starts and goals were sampled at arbitrary
+pixel coordinates. Without a collision shortening an action, direct exact
+completion is possible only when both coordinate differences are divisible by
+eight; none of these 20 held-out episodes met that condition. Future
+convergence experiments should either sample starts and goals on the movement
+lattice or use a one-pixel stride.
+
+The checkpoint SHA-256 is
+`667d0c2ddfb9141619e5cc824412744e9c76c95e8bc85de201df0188d085397a`.
 
 The training CLI writes artifacts beneath
 `artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
