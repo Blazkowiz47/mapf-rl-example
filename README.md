@@ -6,7 +6,7 @@ This is a standalone consumer project showing how
 
 ## What's New in 0.4.0?
 
-- the ViT-DQN reference run balances 20 environment lanes over two
+- the ViT-DQN reference run balances 32 environment lanes over two
   inference-only actor copies and separate CUDA streams
 - actor snapshots refresh every 25 optimizer steps, with policy version and lag
   available through the existing W&B update metrics
@@ -110,16 +110,17 @@ uv run pytest
 The short 64-transition configuration is an integration example, not a
 convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
 learning experiment. `pathfinding_vit_dqn.yaml` is the separate GPU reference
-configuration. Twenty environment processes generate and step procedural tasks
-concurrently, while the main process batches policy inference and replay
+configuration. Thirty-two environment processes generate and step procedural
+tasks concurrently, while the main process batches policy inference and replay
 updates on the GPU. DQN is budgeted for two million environment transitions,
 displays a progress bar, and saves a numbered checkpoint every 100,000
 transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM
-for current and next `uint8` observations. Its batch size of 1536 is tuned for
-the 48 GiB L40S used by the reference run; reduce it for smaller accelerators.
+for current and next `uint8` observations. A replay batch of 512 with an update
+every 256 collected transitions gives a replay ratio of two while retaining
+efficient ViT batches on the 48 GiB L40S reference GPU.
 
 The reference config opts into two inference-only actor copies on the learner
-GPU. The 20 environment lanes are divided evenly between the copies, their
+GPU. The 32 environment lanes are divided evenly between the copies, their
 forwards are submitted on separate CUDA streams, and their weights are
 refreshed from the authoritative online ViT every 25 optimizer steps.
 Evaluation continues to use the current online model. This adds two ViT weight
@@ -149,7 +150,7 @@ GIF and MP4 trajectories:
 
 ```bash
 uv run python scripts/evaluate_pathfinding_checkpoint.py \
-  --checkpoint artifacts/runs/pathfinding_vit_2m_2_actor_copies_async/final/checkpoints/latest.pth
+  --checkpoint artifacts/sweeps/pathfinding_vit_dqn/pathfinding_vit_2m_32_envs_b512_2_actor_copies_async/final/checkpoints/latest.pth
 ```
 
 The evaluator loads only the online ViT weights, performs no pretrained-weight
