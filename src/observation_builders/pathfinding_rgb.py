@@ -26,10 +26,11 @@ class PathfindingRGBObservationBuilder(GridObservationBuilder):
         self._scenario: GridScenario | None = None
         self._background: np.ndarray | None = None
 
-    def _observation_space(
+    def observation_space(
         self,
         scenario: GridScenario,
     ) -> gym.Space[np.ndarray]:
+        """Return the fixed-size RGB model-observation space."""
         del scenario
         return gym.spaces.Box(
             low=0,
@@ -38,7 +39,8 @@ class PathfindingRGBObservationBuilder(GridObservationBuilder):
             dtype=np.uint8,
         )
 
-    def _build(self, world: GridWorldBatch) -> np.ndarray:
+    def build(self, world: GridWorldBatch) -> np.ndarray:
+        """Build RGB observations for every world lane."""
         if self._scenario is not world.scenario or self._background is None:
             if self.output_size == world.scenario.width == world.scenario.height:
                 wall_pixels = world.wall_mask

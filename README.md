@@ -4,14 +4,16 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
-## What's New in 0.6.0?
+## What's New in 0.7.0?
 
-- a local registered observation builder demonstrates complete control over
-  model and replay pixels with hollow blue goals and solid red actors
-- the active compiled run uses 256 asynchronous environments, a 256-sample
-  replay batch, and a 256-transition update interval
-- the example requires `deep-learning-core>=0.0.33,<0.1` and
-  `deep-learning-robotics>=0.0.4,<0.1`
+- every researcher-facing override uses its public contract: observation
+  `build()`, callback `on_*()`, episode `summarize_episode()`, and model
+  `forward()`
+- the procedural environment keeps its Gymnasium methods and `get_grid_rgb()`
+  implementations direct and readable
+- the example requires `deep-learning-core>=0.0.34,<0.1`,
+  `deep-learning-robotics>=0.0.5,<0.1`, and
+  `deep-learning-wandb>=0.0.14,<0.1`
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
@@ -76,7 +78,7 @@ interaction rules before dl-core builds the trainer.
 
 `PathfindingRGBObservationBuilder` inherits the public dl-robotics
 `GridObservationBuilder` and is registered as `example_pathfinding_rgb`. Its
-`_build()` implementation caches walls plus the hollow blue goal, copies that
+public `build()` hook caches walls plus the hollow blue goal, copies that
 background for each step, and draws the moving actor as a solid red circle.
 `ProceduralPathfindingEnv` constructs it through `make_observation_builder()`.
 Consequently, these exact HWC `uint8` pixels—not a separate visualization—are

@@ -261,7 +261,7 @@ nvtx = [
 
 [[package]]
 name = "deep-learning-core"
-version = "0.0.33"
+version = "0.0.34"
 source = { editable = "../dl-core" }
 dependencies = [
     { name = "albumentations" },
@@ -303,7 +303,7 @@ provides-extras = ["azure", "mlflow", "wandb", "dev"]
 
 [[package]]
 name = "deep-learning-robotics"
-version = "0.0.4"
+version = "0.0.5"
 source = { editable = "../dl-robotics" }
 dependencies = [
     { name = "deep-learning-core" },
@@ -332,7 +332,7 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "deep-learning-wandb"
-version = "0.0.13"
+version = "0.0.14"
 source = { editable = "../dl-wandb" }
 dependencies = [
     { name = "deep-learning-core" },
@@ -341,7 +341,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "deep-learning-core", specifier = ">=0.0.26,<0.1" },
+    { name = "deep-learning-core", editable = "../dl-core" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },
@@ -476,7 +476,7 @@ wheels = [
 
 [[package]]
 name = "mapf-rl-example"
-version = "0.6.0"
+version = "0.7.0"
 source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },

@@ -115,9 +115,6 @@ class ViTB16QNetwork(nn.Module):
 
     def forward(self, observations: torch.Tensor) -> torch.Tensor:
         """Return four Q-values for each RGB grid in the batch."""
-        return self._forward(observations)
-
-    def _forward(self, observations: torch.Tensor) -> torch.Tensor:
         if observations.ndim != 4 or observations.shape[1:] != (
             256,
             256,

@@ -90,12 +90,6 @@ class SampledWandbCallback(WandbCallback):
         logs: dict[str, Any] | None = None,
     ) -> None:
         """Start W&B and configure online-model monitoring."""
-        self._on_training_start(logs)
-
-    def _on_training_start(
-        self,
-        logs: dict[str, Any] | None = None,
-    ) -> None:
         super().on_training_start(logs)
         if self.run is not None:
             online_model = self.trainer.models["online"]
@@ -119,19 +113,21 @@ class SampledWandbCallback(WandbCallback):
                 log_graph=False,
             )
 
-    def _on_episode_end(
+    def on_episode_end(
         self,
         episode: int,
         logs: dict[str, Any] | None = None,
     ) -> None:
+        """Log a sampled completed training episode."""
         if episode % self.episode_log_frequency == 0:
-            super()._on_episode_end(episode, logs)
+            super().on_episode_end(episode, logs)
 
-    def _on_update_end(
+    def on_update_end(
         self,
         update: int,
         logs: dict[str, Any] | None = None,
     ) -> None:
+        """Log sampled update metrics and optional weight histograms."""
         update_logs = dict(logs or {})
         if (
             update <= self.dense_update_count
@@ -154,7 +150,7 @@ class SampledWandbCallback(WandbCallback):
                     .sqrt()
                     .item()
                 )
-            super()._on_update_end(update, update_logs)
+            super().on_update_end(update, update_logs)
 
         if (
             self._manual_weight_histograms

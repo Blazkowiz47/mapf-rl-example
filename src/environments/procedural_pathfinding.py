@@ -125,14 +125,6 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
         options: dict[str, Any] | None = None,
     ) -> tuple[np.ndarray, dict[str, Any]]:
         """Replace the previous maze with a newly generated reachable task."""
-        return self._reset(seed=seed, options=options)
-
-    def _reset(
-        self,
-        *,
-        seed: int | None = None,
-        options: dict[str, Any] | None = None,
-    ) -> tuple[np.ndarray, dict[str, Any]]:
         super().reset(seed=seed)
         del options
         margin = max(8, self.grid_size // 20)
@@ -293,12 +285,6 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
         action: int,
     ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         """Move up, down, left, or right and return the resized RGB grid."""
-        return self._step(action)
-
-    def _step(
-        self,
-        action: int,
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         if self.world is None or self.scenario is None:
             raise RuntimeError("reset must be called before step")
         if isinstance(action, bool) or not isinstance(
@@ -390,9 +376,6 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
 
     def get_grid_rgb(self, output_size: int | None = None) -> UInt8Image:
         """Return the current grid as an RGB matrix at the requested size."""
-        return self._get_grid_rgb(output_size)
-
-    def _get_grid_rgb(self, output_size: int | None = None) -> UInt8Image:
         if self.world is None:
             raise RuntimeError("reset must be called before rendering")
         size = self.grid_size if output_size is None else output_size
@@ -412,16 +395,10 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
 
     def render(self) -> UInt8Image:
         """Return the current 1000×1000 RGB grid by default."""
-        return self._render()
-
-    def _render(self) -> UInt8Image:
         return self.get_grid_rgb()
 
     def close(self) -> None:
         """Release the current generated world."""
-        self._close()
-
-    def _close(self) -> None:
         self.world = None
         self.scenario = None
 

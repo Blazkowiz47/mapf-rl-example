@@ -18,14 +18,6 @@ class PathfindingEpisodeManager(RoboticsEpisodeManager):
         **statistics: float,
     ) -> dict[str, float]:
         """Return generic, robotics, and pathfinding episode metrics."""
-        return self._summarize_episode(record, result, **statistics)
-
-    def _summarize_episode(
-        self,
-        record: EpisodeRecord,
-        result: EpisodeResult,
-        **statistics: float,
-    ) -> dict[str, float]:
         metrics = super().summarize_episode(
             record,
             result,

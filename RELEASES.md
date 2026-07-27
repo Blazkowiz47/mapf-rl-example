@@ -3,6 +3,15 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## 0.6.0
+
+- a local registered observation builder demonstrates complete control over
+  model and replay pixels with hollow blue goals and solid red actors
+- the active compiled run uses 256 asynchronous environments, a 256-sample
+  replay batch, and a 256-transition update interval
+- the example requires `deep-learning-core>=0.0.33,<0.1` and
+  `deep-learning-robotics>=0.0.4,<0.1`
+
 ## 0.5.0
 
 - reproducible configs compare the 32-environment pipelined baseline, a larger
