@@ -39,7 +39,7 @@ class SampledWandbCallback(WandbCallback):
             config_field(
                 "watch_log_frequency",
                 "int",
-                "DQN updates between W&B parameter and gradient histograms.",
+                "DQN updates between W&B model histogram samples.",
                 default=500,
             ),
         ]
@@ -83,12 +83,13 @@ class SampledWandbCallback(WandbCallback):
         self.update_log_frequency = update_log_frequency
         self.dense_update_count = dense_update_count
         self.watch_log_frequency = watch_log_frequency
+        self._manual_weight_histograms = False
 
     def on_training_start(
         self,
         logs: dict[str, Any] | None = None,
     ) -> None:
-        """Start W&B and watch online-network weights and gradients."""
+        """Start W&B and configure online-model monitoring."""
         self._on_training_start(logs)
 
     def _on_training_start(
@@ -98,6 +99,11 @@ class SampledWandbCallback(WandbCallback):
         super().on_training_start(logs)
         if self.run is not None:
             online_model = self.trainer.models["online"]
+            self._manual_weight_histograms = (
+                getattr(online_model, "_compiled_call_impl", None) is not None
+            )
+            if self._manual_weight_histograms:
+                return
             self._watched_modules = [
                 module
                 for module in online_model.modules()
@@ -126,11 +132,11 @@ class SampledWandbCallback(WandbCallback):
         update: int,
         logs: dict[str, Any] | None = None,
     ) -> None:
+        update_logs = dict(logs or {})
         if (
             update <= self.dense_update_count
             or update % self.update_log_frequency == 0
         ):
-            update_logs = dict(logs or {})
             trainable_parameters = [
                 parameter
                 for parameter in self.trainer.models["online"].parameters()
@@ -149,6 +155,37 @@ class SampledWandbCallback(WandbCallback):
                     .item()
                 )
             super()._on_update_end(update, update_logs)
+
+        if (
+            self._manual_weight_histograms
+            and self.run is not None
+            and update % self.watch_log_frequency == 0
+        ):
+            histogram_logs: dict[str, Any] = {
+                "global_step": float(update_logs.get("global_step", update))
+            }
+            for name, parameter in self.trainer.models[
+                "online"
+            ].named_parameters():
+                if parameter.requires_grad:
+                    histogram_logs[f"model/weights/{name}"] = wandb.Histogram(
+                        parameter.detach().float().cpu().numpy()
+                    )
+            if not self._rl_step_metric_defined:
+                wandb.define_metric("global_step")
+                self._rl_step_metric_defined = True
+            for metric_name in histogram_logs:
+                if (
+                    metric_name == "global_step"
+                    or metric_name in self._rl_metric_names
+                ):
+                    continue
+                wandb.define_metric(
+                    metric_name,
+                    step_metric="global_step",
+                )
+                self._rl_metric_names.add(metric_name)
+            wandb.log(histogram_logs)
 
 
 __all__ = ["SampledWandbCallback"]

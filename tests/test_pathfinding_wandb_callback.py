@@ -61,6 +61,65 @@ def test_sampled_wandb_watches_model_and_limits_high_frequency_events(
     assert logged_update["model/weight_l2_norm"] > 0
 
 
+def test_sampled_wandb_logs_compiled_model_weights_without_watch_hooks(
+    monkeypatch,
+) -> None:
+    callback = SampledWandbCallback(
+        update_log_frequency=3,
+        dense_update_count=1,
+        watch_log_frequency=2,
+    )
+    online_model = torch.nn.Linear(2, 2)
+    online_model._compiled_call_impl = Mock()
+    callback.trainer = SimpleNamespace(
+        accelerator=None,
+        config={},
+        models={"online": online_model},
+        artifact_manager=None,
+    )
+    monkeypatch.setattr(
+        wandb,
+        "init",
+        Mock(return_value=SimpleNamespace()),
+    )
+    watch = Mock()
+    histogram = Mock(side_effect=lambda values: values.shape)
+    log = Mock()
+    define_metric = Mock()
+    monkeypatch.setattr(wandb, "watch", watch)
+    monkeypatch.setattr(wandb, "Histogram", histogram)
+    monkeypatch.setattr(wandb, "log", log)
+    monkeypatch.setattr(wandb, "define_metric", define_metric)
+
+    callback.on_training_start()
+    callback._log_rl_metrics = Mock()
+    callback.on_update_end(1, {"global_step": 10})
+    callback.on_update_end(2, {"global_step": 20})
+    callback.on_update_end(3, {"global_step": 30})
+    callback.on_update_end(4, {"global_step": 40})
+
+    watch.assert_not_called()
+    assert callback._log_rl_metrics.call_count == 2
+    assert [
+        call.kwargs["fallback_step"]
+        for call in callback._log_rl_metrics.call_args_list
+    ] == [1, 3]
+    assert histogram.call_count == 4
+    assert [call.args[0]["global_step"] for call in log.call_args_list] == [
+        20.0,
+        40.0,
+    ]
+    histogram_log = log.call_args.args[0]
+    assert histogram_log["global_step"] == 40.0
+    assert histogram_log["model/weights/weight"] == (2, 2)
+    assert histogram_log["model/weights/bias"] == (2,)
+    define_metric.assert_any_call("global_step")
+    define_metric.assert_any_call(
+        "model/weights/weight",
+        step_metric="global_step",
+    )
+
+
 def test_pathfinding_manager_reports_shortest_path_gap_and_efficiency() -> None:
     manager = PathfindingEpisodeManager({"media_format": "none"})
     context = EpisodeContext(

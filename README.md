@@ -177,8 +177,10 @@ automatically.
 The first 100 DQN updates are logged densely so loss, Q-value, target-Q, replay,
 epsilon, actor-policy version, actor-policy lag, and weight-norm curves appear
 immediately; later updates are sampled.
-W&B watches weight and gradient histograms for trainable modules every 500
-updates rather than serializing the complete frozen ViT repeatedly. RL has no
+Eager runs use W&B watch hooks for weight and gradient histograms every 500
+updates. The compiled config instead logs sampled trainable-weight histograms
+directly, because mutable watch hooks would force repeated learner-graph
+compilation. Neither path serializes the frozen ViT parameters. RL has no
 classification-accuracy metric, so policy quality is represented by episode
 success and path efficiency. The pathfinding episode manager logs total path
 steps, expected Manhattan shortest path, their difference, excess path length,
