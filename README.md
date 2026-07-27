@@ -4,15 +4,14 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
-## What's New in 0.5.0?
+## What's New in 0.6.0?
 
-- reproducible configs compare the 32-environment pipelined baseline, a larger
-  replay batch, and selected-model PyTorch compilation
-- compiled ViT learning keeps variable DQN inference and mutable W&B hooks out
-  of the learner graph while retaining sampled weight histograms
-- phase timings make environment, replay, and learner throughput comparisons
-  visible in W&B
-- the example requires `deep-learning-core>=0.0.32,<0.1`
+- a local registered observation builder demonstrates complete control over
+  model and replay pixels with hollow blue goals and solid red actors
+- the active compiled run uses 256 asynchronous environments, a 256-sample
+  replay batch, and a 256-transition update interval
+- the example requires `deep-learning-core>=0.0.33,<0.1` and
+  `deep-learning-robotics>=0.0.4,<0.1`
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
@@ -24,8 +23,8 @@ GIF.
 
 The repository also contains `ProceduralPathfindingEnv`, a single-agent
 Gymnasium environment for the ViT pathfinding example. Every reset replaces the
-previous maze with a seeded 1000×1000 task containing one red agent and one blue
-goal. `get_grid_rgb()` and `render()` expose the current grid as an RGB
+previous maze with a seeded 1000×1000 task containing one solid red agent and
+one hollow blue goal. `get_grid_rgb()` and `render()` expose the current grid as an RGB
 `uint8` matrix, while the normal observation is resized to 256×256 for
 memory-bounded replay and ViT input.
 
@@ -59,6 +58,8 @@ src/
 │   └── pathfinding.py
 ├── models/
 │   └── vit_q_network.py
+├── observation_builders/
+│   └── pathfinding_rgb.py
 ├── rules/
 │   ├── exclusive_cells.py
 │   ├── ghost_actors.py
@@ -68,8 +69,24 @@ src/
 ```
 
 `bootstrap.py` imports each local package once, so decorators register
-environments, models, callbacks, episode managers, and interaction rules before
-dl-core builds the trainer.
+environments, models, observation builders, callbacks, episode managers, and
+interaction rules before dl-core builds the trainer.
+
+## Changing Model Pixels
+
+`PathfindingRGBObservationBuilder` inherits the public dl-robotics
+`GridObservationBuilder` and is registered as `example_pathfinding_rgb`. Its
+`_build()` implementation caches walls plus the hollow blue goal, copies that
+background for each step, and draws the moving actor as a solid red circle.
+`ProceduralPathfindingEnv` constructs it through `make_observation_builder()`.
+Consequently, these exact HWC `uint8` pixels—not a separate visualization—are
+returned by `reset()` and `step()`, stored in DQN replay, and consumed by the
+ViT. The builder performs the rasterization at 256×256; the ViT permutes and
+normalizes those pixels without another resize.
+
+Edit [the local builder](src/observation_builders/pathfinding_rgb.py) to try
+different shapes, colors, sizes, or additional visual state without changing
+the world physics, reward calculation, trainer, or model interface.
 
 ## Changing Interaction Rules
 
@@ -132,15 +149,17 @@ environment step is in flight. W&B receives action-selection, environment
 dispatch/wait, transition-processing, learner, and collector-cycle timings so
 the throughput comparison remains attributable.
 
-`configs/pathfinding_vit_compiled.yaml` keeps the 32-environment, 512-sample
-pipelined benchmark and opts into in-place PyTorch compilation for the online
-model. The frozen target remains eager so the shared ViT implementation does
-not accumulate conflicting trainable/frozen compile guards. The first learner
-calls include compilation warm-up, so compare sustained throughput only after
-the graphs have been cached. Model structure and checkpoint keys remain
-compatible with the eager config. Action selection and Double-DQN target
-inference remain eager; only the fixed-shape, gradient-enabled learner forward
-uses the compiled graph.
+`configs/pathfinding_vit_compiled.yaml` is the active high-concurrency run. It
+uses 256 asynchronous environments, a replay batch of 256, and
+`train_frequency: 256`, giving a replay ratio of one and one optimizer update
+per vector collector call after warm-up. It opts into in-place PyTorch
+compilation for the online model. The frozen target remains eager so the shared
+ViT implementation does not accumulate conflicting trainable/frozen compile
+guards. The first learner calls include compilation warm-up, so compare
+sustained throughput only after the graphs have been cached. Model structure
+and checkpoint keys remain compatible with the eager config. Action selection
+and Double-DQN target inference remain eager; only the fixed-shape,
+gradient-enabled learner forward uses the compiled graph.
 
 `configs/pathfinding_vit_pipelined_b1024.yaml` keeps the same environment,
 model, replay ratio, and overlap behavior while sampling 1,024 transitions
@@ -160,8 +179,9 @@ default. Because collection advances in blocks of 256 transitions, the final
 step and 100,000-transition checkpoint filenames can exceed their configured
 boundaries by up to 255 transitions.
 
-The reference config opts into two inference-only actor copies on the learner
-GPU. The 32 environment lanes are divided evenly between the copies, their
+The reference configs opt into two inference-only actor copies on the learner
+GPU. The active compiled run divides its 256 environment lanes evenly between
+the copies, while the 32-environment baseline assigns 16 lanes to each. Their
 forwards are submitted on separate CUDA streams, and their weights are
 refreshed from the authoritative online ViT every 25 optimizer steps.
 Evaluation continues to use the current online model. This adds two ViT weight

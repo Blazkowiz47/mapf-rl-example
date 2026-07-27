@@ -7,6 +7,7 @@ import callbacks
 import environments
 import episode_managers
 import models
+import observation_builders
 import rules
 import scenarios
 
@@ -17,6 +18,7 @@ __all__ = [
     "environments",
     "episode_managers",
     "models",
+    "observation_builders",
     "rules",
     "scenarios",
 ]

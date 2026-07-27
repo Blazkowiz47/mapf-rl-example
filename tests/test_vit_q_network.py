@@ -352,14 +352,23 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
     for section in (
         "seed",
         "deterministic",
-        "environment",
         "evaluation_environment",
         "models",
         "optimizers",
-        "trainer",
         "episode_managers",
     ):
         assert compiled_config[section] == pipelined_config[section]
+    assert compiled_config["environment"] == {
+        **pipelined_config["environment"],
+        "num_envs": 256,
+    }
+    compiled_dqn = compiled_config["trainer"]["dqn"]
+    assert compiled_dqn == {
+        **pipelined_dqn,
+        "batch_size": 256,
+    }
+    assert compiled_dqn["train_frequency"] == 256
+    assert compiled_dqn["batch_size"] == compiled_dqn["train_frequency"]
     assert compiled_config["accelerator"] == {
         **pipelined_config["accelerator"],
         "compile_models": ["online"],

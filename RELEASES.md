@@ -3,6 +3,16 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## 0.5.0
+
+- reproducible configs compare the 32-environment pipelined baseline, a larger
+  replay batch, and selected-model PyTorch compilation
+- compiled ViT learning keeps variable DQN inference and mutable W&B hooks out
+  of the learner graph while retaining sampled weight histograms
+- phase timings make environment, replay, and learner throughput comparisons
+  visible in W&B
+- the example requires `deep-learning-core>=0.0.32,<0.1`
+
 ## 0.4.0
 
 - the ViT-DQN reference run balances 20 environment lanes over two

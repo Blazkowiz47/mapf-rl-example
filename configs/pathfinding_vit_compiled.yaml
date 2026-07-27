@@ -3,17 +3,17 @@ deterministic: false
 
 runtime:
   output_dir: artifacts
-  name: pathfinding_vit_2m_32_envs_b512_compiled
+  name: pathfinding_vit_2m_256_envs_b256_compiled
   log_level: INFO
 
 experiment:
-  name: pathfinding_vit_2m_32_envs_b512_compiled
+  name: pathfinding_vit_2m_256_envs_b256_compiled
   description: "Compiled ViT-B/16 DQN with overlapped collection and learning"
 
 tracking:
   backend: wandb
   experiment_name: mapf-rl-example
-  run_name: pathfinding-vit-2m-32-envs-b512-compiled
+  run_name: pathfinding-vit-2m-256-envs-b256-compiled
 
 accelerator:
   type: single_gpu
@@ -26,7 +26,7 @@ accelerator:
 environment:
   name: gymnasium_vector
   id: ProceduralPathfinding-v0
-  num_envs: 32
+  num_envs: 256
   kwargs:
     grid_size: 1000
     observation_size: 256
@@ -78,7 +78,7 @@ trainer:
     show_progress: true
     gamma: 0.99
     buffer_size: 4096
-    batch_size: 512
+    batch_size: 256
     learning_starts: 4096
     train_frequency: 256
     gradient_steps: 1
@@ -117,7 +117,7 @@ callbacks:
       - pathfinding
       - pipelined
       - compiled
-    notes: "Compiled ViT-B/16 DQN with 32 async environments"
+    notes: "Compiled ViT-B/16 DQN with 256 async environments"
     log_config: true
     episode_log_frequency: 100
     update_log_frequency: 100

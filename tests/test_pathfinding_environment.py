@@ -30,8 +30,48 @@ def test_procedural_environment_is_seeded_and_returns_rgb_grids() -> None:
     assert np.array_equal(first_start, environment.world.positions)
     assert np.array_equal(first_goal, environment.world.goal_positions)
     assert first_info == second_info
-    assert np.any(np.all(first_grid == (255, 0, 0), axis=2))
+    start_row, start_column = first_start[0, 0]
+    goal_row, goal_column = first_goal[0]
+    assert first_grid[start_row, start_column].tolist() == [255, 0, 0]
+    assert first_grid[goal_row, goal_column].tolist() == [255, 255, 255]
     assert np.any(np.all(first_grid == (0, 0, 255), axis=2))
+    observation_scale = 63 / 127
+    observation_start = (
+        round(int(start_row) * observation_scale),
+        round(int(start_column) * observation_scale),
+    )
+    observation_goal = (
+        round(int(goal_row) * observation_scale),
+        round(int(goal_column) * observation_scale),
+    )
+    assert first_observation[observation_start].tolist() == [255, 0, 0]
+    assert first_observation[observation_goal].tolist() == [255, 255, 255]
+    goal_row_start = max(0, observation_goal[0] - 6)
+    goal_row_end = min(64, observation_goal[0] + 7)
+    goal_column_start = max(0, observation_goal[1] - 6)
+    goal_column_end = min(64, observation_goal[1] + 7)
+    goal_patch = first_observation[
+        goal_row_start:goal_row_end,
+        goal_column_start:goal_column_end,
+    ]
+    assert np.any(np.all(goal_patch == (0, 0, 255), axis=2))
+
+    different_observation, _ = environment.reset(seed=2027)
+    different_goal_row, different_goal_column = (
+        environment.world.goal_positions[0]
+    )
+    different_goal = (
+        round(int(different_goal_row) * observation_scale),
+        round(int(different_goal_column) * observation_scale),
+    )
+    different_goal_patch = different_observation[
+        max(0, different_goal[0] - 6):min(64, different_goal[0] + 7),
+        max(0, different_goal[1] - 6):min(64, different_goal[1] + 7),
+    ]
+
+    assert not np.array_equal(first_observation, different_observation)
+    assert different_observation[different_goal].tolist() == [255, 255, 255]
+    assert np.any(np.all(different_goal_patch == (0, 0, 255), axis=2))
 
 
 def test_reward_tracks_progress_and_goal_ends_episode() -> None:

@@ -4,10 +4,14 @@ from __future__ import annotations
 
 from typing import Any, ClassVar
 
-import cv2
 import gymnasium as gym
 import numpy as np
-from dl_robotics import GridScenario, GridWorldBatch
+from dl_robotics import (
+    GridObservationBuilder,
+    GridScenario,
+    GridWorldBatch,
+    make_observation_builder,
+)
 from numpy.typing import NDArray
 
 UInt8Image = NDArray[np.uint8]
@@ -104,6 +108,14 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
         )
         self.scenario: GridScenario | None = None
         self.world: GridWorldBatch | None = None
+        self._observation_builders: dict[int, GridObservationBuilder] = {
+            observation_size: make_observation_builder(
+                {
+                    "name": "example_pathfinding_rgb",
+                    "output_size": observation_size,
+                }
+            )
+        }
         self.episode_steps = 0
 
     def reset(
@@ -389,40 +401,14 @@ class ProceduralPathfindingEnv(gym.Env[np.ndarray, int]):
         if size <= 0:
             raise ValueError("output_size must be positive")
 
-        if size == self.grid_size:
-            wall_pixels = self.world.wall_mask
-        else:
-            wall_density = cv2.resize(
-                self.world.wall_mask.astype(np.uint8) * 255,
-                (size, size),
-                interpolation=cv2.INTER_AREA,
+        if size not in self._observation_builders:
+            self._observation_builders[size] = make_observation_builder(
+                {
+                    "name": "example_pathfinding_rgb",
+                    "output_size": size,
+                }
             )
-            wall_pixels = wall_density >= 32
-        frame = np.full((size, size, 3), 255, dtype=np.uint8)
-        frame[wall_pixels] = (42, 52, 68)
-
-        goal_row, goal_column = self.world.goal_positions[0]
-        agent_row, agent_column = self.world.positions[0, 0]
-        scale = (size - 1) / (self.grid_size - 1)
-        goal_center = (
-            round(int(goal_column) * scale),
-            round(int(goal_row) * scale),
-        )
-        agent_center = (
-            round(int(agent_column) * scale),
-            round(int(agent_row) * scale),
-        )
-        radius = max(2, size // 128)
-        cv2.circle(frame, goal_center, radius, (0, 0, 255), -1)
-        cv2.circle(frame, agent_center, radius, (255, 0, 0), -1)
-        cv2.circle(
-            frame,
-            goal_center,
-            radius + 2,
-            (0, 0, 255),
-            2,
-        )
-        return frame
+        return self._observation_builders[size].build(self.world)[0]
 
     def render(self) -> UInt8Image:
         """Return the current 1000×1000 RGB grid by default."""
