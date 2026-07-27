@@ -136,7 +136,9 @@ model. The frozen target remains eager so the shared ViT implementation does
 not accumulate conflicting trainable/frozen compile guards. The first learner
 calls include compilation warm-up, so compare sustained throughput only after
 the graphs have been cached. Model structure and checkpoint keys remain
-compatible with the eager config.
+compatible with the eager config. Action selection and Double-DQN target
+inference remain eager; only the fixed-shape, gradient-enabled learner forward
+uses the compiled graph.
 
 `configs/pathfinding_vit_pipelined_b1024.yaml` keeps the same environment,
 model, replay ratio, and overlap behavior while sampling 1,024 transitions
