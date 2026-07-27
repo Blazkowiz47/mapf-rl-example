@@ -104,6 +104,7 @@ uv sync --extra dev
 uv run dl-run --config configs/mapf_dqn.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
+uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
 ```
 
@@ -118,6 +119,16 @@ transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM
 for current and next `uint8` observations. A replay batch of 512 with an update
 every 256 collected transitions gives a replay ratio of two while retaining
 efficient ViT batches on the 48 GiB L40S reference GPU.
+
+`configs/pathfinding_vit_256_envs.yaml` is a separate CPU-pressure benchmark.
+It keeps the 512 replay batch and 256-transition update interval but collects
+one complete update interval from 256 asynchronous environments per vector
+call, so it schedules one optimizer update per collector call after warmup.
+This intentionally oversubscribes the 40-logical-CPU reference host by 6.4
+times; use it to measure scheduler and IPC scaling rather than as the portable
+default. Because collection advances in blocks of 256 transitions, the final
+step and 100,000-transition checkpoint filenames can exceed their configured
+boundaries by up to 255 transitions.
 
 The reference config opts into two inference-only actor copies on the learner
 GPU. The 32 environment lanes are divided evenly between the copies, their

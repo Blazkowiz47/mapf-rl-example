@@ -190,3 +190,17 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
     assert "pathfinding" in config["episode_managers"]
     assert config["callbacks"]["sampled_wandb"]["dense_update_count"] == 100
     assert config["callbacks"]["sampled_wandb"]["watch_log_frequency"] == 500
+
+    pressure_config = yaml.safe_load(
+        (project_root / "configs" / "pathfinding_vit_256_envs.yaml").read_text()
+    )
+    assert pressure_config["environment"]["num_envs"] == 256
+    assert pressure_config["trainer"]["dqn"]["batch_size"] == 512
+    assert pressure_config["trainer"]["dqn"]["train_frequency"] == 256
+    assert pressure_config["trainer"]["dqn"]["actor_model_copies"] == 2
+    assert pressure_config["trainer"]["dqn"]["actor_model_sync_frequency"] == 25
+    assert pressure_config["runtime"]["name"] != config["runtime"]["name"]
+    assert (
+        pressure_config["tracking"]["run_name"]
+        != config["tracking"]["run_name"]
+    )
