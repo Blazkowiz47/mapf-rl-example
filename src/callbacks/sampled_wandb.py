@@ -1,4 +1,4 @@
-"""Rate-limited W&B logging for the two-billion-step pathfinding run."""
+"""Rate-limited W&B logging for the reference pathfinding run."""
 
 from __future__ import annotations
 

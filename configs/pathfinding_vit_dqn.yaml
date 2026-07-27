@@ -3,17 +3,17 @@ deterministic: false
 
 runtime:
   output_dir: artifacts
-  name: pathfinding_vit_2b
+  name: pathfinding_vit_2m_async
   log_level: INFO
 
 experiment:
-  name: pathfinding_vit_2b
+  name: pathfinding_vit_2m_async
   description: "ViT-B/16 DQN on procedural single-agent pathfinding"
 
 tracking:
   backend: wandb
   experiment_name: mapf-rl-example
-  run_name: pathfinding-vit-2b
+  run_name: pathfinding-vit-2m-async
 
 accelerator:
   type: single_gpu
@@ -24,8 +24,7 @@ accelerator:
 environment:
   name: gymnasium_vector
   id: ProceduralPathfinding-v0
-  num_envs: 32
-  vectorization_mode: sync
+  num_envs: 20
   kwargs:
     grid_size: 1000
     observation_size: 256
@@ -68,14 +67,16 @@ optimizers:
 
 trainer:
   dqn:
-    total_timesteps: 2000000000
+    total_timesteps: 2000000
     max_episode_steps: 128
-    evaluation_frequency: 200000
+    evaluation_frequency: 2000
     evaluation_episodes: 10
-    checkpoint_frequency: 2000000
+    checkpoint_frequency: 0
+    checkpoint_frequency_steps: 100000
+    show_progress: true
     gamma: 0.99
     buffer_size: 4096
-    batch_size: 128
+    batch_size: 1536
     learning_starts: 4096
     train_frequency: 256
     gradient_steps: 1
@@ -83,7 +84,7 @@ trainer:
     double_dqn: true
     epsilon_start: 1.0
     epsilon_end: 0.05
-    epsilon_decay_steps: 50000000
+    epsilon_decay_steps: 1500000
     checkpoint_replay_buffer: false
 
 episode_managers:
@@ -109,9 +110,9 @@ callbacks:
       - dqn
       - vit
       - pathfinding
-    notes: "One ViT-B/16 DQN run over two billion procedural transitions"
+    notes: "ViT-B/16 DQN over two million transitions with 20 async environments"
     log_config: true
-    episode_log_frequency: 1000
+    episode_log_frequency: 100
     update_log_frequency: 100
     dense_update_count: 100
     watch_log_frequency: 500

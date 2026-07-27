@@ -261,7 +261,7 @@ nvtx = [
 
 [[package]]
 name = "deep-learning-core"
-version = "0.0.28"
+version = "0.0.30"
 source = { editable = "../dl-core" }
 dependencies = [
     { name = "albumentations" },
@@ -476,7 +476,7 @@ wheels = [
 
 [[package]]
 name = "mapf-rl-example"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },

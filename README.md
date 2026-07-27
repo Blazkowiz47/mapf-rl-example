@@ -4,16 +4,13 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
-## What's New in 0.2.0?
+## What's New in 0.3.0?
 
-- local code now follows the generated component layout for environments,
-  models, callbacks, episode managers, interaction rules, and scenarios
-- three YAML-selectable interaction rules demonstrate default exclusive cells,
-  index-based priority, and intentionally non-physical pass-through actors
-- classical reports and visualizations live under `scripts/`, with script flow
-  kept directly in `main()`
-- dependencies require `deep-learning-core>=0.0.28,<0.1` and the published
-  `deep-learning-robotics>=0.0.3,<0.1`
+- the ViT-DQN reference run uses 20 asynchronous environment processes and a
+  two-million-transition budget
+- numbered checkpoints are saved every 100,000 transitions, and training
+  progress is visible in the terminal
+- the example requires `deep-learning-core>=0.0.30,<0.1`
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
@@ -112,19 +109,19 @@ uv run pytest
 
 The short 64-transition configuration is an integration example, not a
 convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
-learning experiment. `pathfinding_vit_dqn.yaml` is the separate long-running
-GPU configuration: 32 environments collect procedural tasks in parallel, the
-replay buffer retains 256×256 RGB observations, and DQN is budgeted for the
-requested two billion environment transitions. The default 4096-transition
-replay buffer uses about 1.5 GiB of host RAM for current and next `uint8`
-observations. The batch size of 128 is a portable starting point; benchmark a
-run-specific override before increasing it for a larger accelerator.
+learning experiment. `pathfinding_vit_dqn.yaml` is the separate GPU reference
+configuration. Twenty environment processes generate and step procedural tasks
+concurrently, while the main process batches policy inference and replay
+updates on the GPU. DQN is budgeted for two million environment transitions,
+displays a progress bar, and saves a numbered checkpoint every 100,000
+transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM
+for current and next `uint8` observations. Its batch size of 1536 is tuned for
+the 48 GiB L40S used by the reference run; reduce it for smaller accelerators.
 
 The long run uses `deep-learning-wandb` through the local `sampled_wandb`
 callback. It retains the integration's normal configuration, run metadata,
 evaluation metrics, and `global_step` semantics while sampling training
-episodes and DQN updates so a two-billion-step job does not produce millions
-of nearly adjacent API calls. Set `WANDB_API_KEY` in the shell before
+episodes and DQN updates. Set `WANDB_API_KEY` in the shell before
 launching; `.env.example` documents the expected variable but is not loaded
 automatically.
 
@@ -142,7 +139,7 @@ GIF and MP4 trajectories:
 
 ```bash
 uv run python scripts/evaluate_pathfinding_checkpoint.py \
-  --checkpoint artifacts/runs/pathfinding_vit_2b/final/checkpoints/latest.pth
+  --checkpoint artifacts/runs/pathfinding_vit_2m_async/final/checkpoints/latest.pth
 ```
 
 The evaluator loads only the online ViT weights, performs no pretrained-weight

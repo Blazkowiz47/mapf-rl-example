@@ -166,18 +166,23 @@ def test_dqn_injects_dimensions_and_loads_interpolated_pretrained_weights(
         trainer.close()
 
 
-def test_pathfinding_config_defines_the_requested_long_run() -> None:
+def test_pathfinding_config_defines_the_requested_reference_run() -> None:
     project_root = Path(__file__).resolve().parents[1]
     config = yaml.safe_load(
         (project_root / "configs" / "pathfinding_vit_dqn.yaml").read_text()
     )
 
-    assert config["trainer"]["dqn"]["total_timesteps"] == 2_000_000_000
+    assert config["trainer"]["dqn"]["total_timesteps"] == 2_000_000
+    assert config["trainer"]["dqn"]["checkpoint_frequency"] == 0
+    assert config["trainer"]["dqn"]["checkpoint_frequency_steps"] == 100_000
+    assert config["trainer"]["dqn"]["show_progress"] is True
     assert config["models"]["q_network"]["name"] == "vit_b_16_q_network"
+    assert config["environment"]["num_envs"] == 20
+    assert "vectorization_mode" not in config["environment"]
     assert config["environment"]["kwargs"]["grid_size"] == 1000
     assert config["environment"]["kwargs"]["observation_size"] == 256
     assert config["trainer"]["dqn"]["buffer_size"] == 4096
-    assert config["trainer"]["dqn"]["batch_size"] == 128
+    assert config["trainer"]["dqn"]["batch_size"] == 1536
     assert config["tracking"]["backend"] == "wandb"
     assert "pathfinding" in config["episode_managers"]
     assert config["callbacks"]["sampled_wandb"]["dense_update_count"] == 100
