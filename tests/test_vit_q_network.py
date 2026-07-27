@@ -362,7 +362,7 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
         assert compiled_config[section] == pipelined_config[section]
     assert compiled_config["accelerator"] == {
         **pipelined_config["accelerator"],
-        "compile_models": True,
+        "compile_models": ["online"],
         "compile_mode": "default",
     }
     for section, metadata_keys in (

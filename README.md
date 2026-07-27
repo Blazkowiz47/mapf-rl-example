@@ -132,9 +132,11 @@ the throughput comparison remains attributable.
 
 `configs/pathfinding_vit_compiled.yaml` keeps the 32-environment, 512-sample
 pipelined benchmark and opts into in-place PyTorch compilation for the online
-and target models. Its first learner calls include compilation warm-up, so
-compare sustained throughput only after those graphs have been cached. The
-model structure and checkpoint keys remain compatible with the eager config.
+model. The frozen target remains eager so the shared ViT implementation does
+not accumulate conflicting trainable/frozen compile guards. The first learner
+calls include compilation warm-up, so compare sustained throughput only after
+the graphs have been cached. Model structure and checkpoint keys remain
+compatible with the eager config.
 
 `configs/pathfinding_vit_pipelined_b1024.yaml` keeps the same environment,
 model, replay ratio, and overlap behavior while sampling 1,024 transitions

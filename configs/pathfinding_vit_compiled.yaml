@@ -20,7 +20,7 @@ accelerator:
   mixed_precision: bf16
   gradient_accumulation_steps: 1
   max_grad_norm: 10.0
-  compile_models: true
+  compile_models: [online]
   compile_mode: default
 
 environment:
