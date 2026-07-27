@@ -3,17 +3,17 @@ deterministic: false
 
 runtime:
   output_dir: artifacts
-  name: pathfinding_vit_2m_async
+  name: pathfinding_vit_2m_2_actor_copies_async
   log_level: INFO
 
 experiment:
-  name: pathfinding_vit_2m_async
-  description: "ViT-B/16 DQN on procedural single-agent pathfinding"
+  name: pathfinding_vit_2m_2_actor_copies_async
+  description: "ViT-B/16 DQN with two actor copies on procedural pathfinding"
 
 tracking:
   backend: wandb
   experiment_name: mapf-rl-example
-  run_name: pathfinding-vit-2m-async
+  run_name: pathfinding-vit-2m-2-actor-copies-async
 
 accelerator:
   type: single_gpu
@@ -86,6 +86,8 @@ trainer:
     epsilon_end: 0.05
     epsilon_decay_steps: 1500000
     checkpoint_replay_buffer: false
+    actor_model_copies: 2
+    actor_model_sync_frequency: 25
 
 episode_managers:
   pathfinding:
@@ -110,7 +112,7 @@ callbacks:
       - dqn
       - vit
       - pathfinding
-    notes: "ViT-B/16 DQN over two million transitions with 20 async environments"
+    notes: "ViT-B/16 DQN with two actor copies and 20 async environments"
     log_config: true
     episode_log_frequency: 100
     update_log_frequency: 100

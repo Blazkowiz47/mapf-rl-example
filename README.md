@@ -118,6 +118,15 @@ transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM
 for current and next `uint8` observations. Its batch size of 1536 is tuned for
 the 48 GiB L40S used by the reference run; reduce it for smaller accelerators.
 
+The reference config opts into two inference-only actor copies on the learner
+GPU. The 20 environment lanes are divided evenly between the copies, their
+forwards are submitted on separate CUDA streams, and their weights are
+refreshed from the authoritative online ViT every 25 optimizer steps.
+Evaluation continues to use the current online model. This adds two ViT weight
+copies to GPU memory, so set `actor_model_copies: 0` if memory is tighter or one
+batched inference is faster on the target device. It does not use `torchrun` or
+perform distributed gradient training.
+
 The long run uses `deep-learning-wandb` through the local `sampled_wandb`
 callback. It retains the integration's normal configuration, run metadata,
 evaluation metrics, and `global_step` semantics while sampling training
@@ -126,7 +135,8 @@ launching; `.env.example` documents the expected variable but is not loaded
 automatically.
 
 The first 100 DQN updates are logged densely so loss, Q-value, target-Q, replay,
-epsilon, and weight-norm curves appear immediately; later updates are sampled.
+epsilon, actor-policy version, actor-policy lag, and weight-norm curves appear
+immediately; later updates are sampled.
 W&B watches weight and gradient histograms for trainable modules every 500
 updates rather than serializing the complete frozen ViT repeatedly. RL has no
 classification-accuracy metric, so policy quality is represented by episode
@@ -139,7 +149,7 @@ GIF and MP4 trajectories:
 
 ```bash
 uv run python scripts/evaluate_pathfinding_checkpoint.py \
-  --checkpoint artifacts/runs/pathfinding_vit_2m_async/final/checkpoints/latest.pth
+  --checkpoint artifacts/runs/pathfinding_vit_2m_2_actor_copies_async/final/checkpoints/latest.pth
 ```
 
 The evaluator loads only the online ViT weights, performs no pretrained-weight
