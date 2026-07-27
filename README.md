@@ -4,13 +4,13 @@ This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
 `deep-learning-core`.
 
-## What's New in 0.3.0?
+## What's New in 0.4.0?
 
-- the ViT-DQN reference run uses 20 asynchronous environment processes and a
-  two-million-transition budget
-- numbered checkpoints are saved every 100,000 transitions, and training
-  progress is visible in the terminal
-- the example requires `deep-learning-core>=0.0.30,<0.1`
+- the ViT-DQN reference run balances 20 environment lanes over two
+  inference-only actor copies and separate CUDA streams
+- actor snapshots refresh every 25 optimizer steps, with policy version and lag
+  available through the existing W&B update metrics
+- the example requires `deep-learning-core>=0.0.31,<0.1`
 
 Previous versions are recorded in the [release history](RELEASES.md).
 

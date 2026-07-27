@@ -3,6 +3,14 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## 0.3.0
+
+- the ViT-DQN reference run uses 20 asynchronous environment processes and a
+  two-million-transition budget
+- numbered checkpoints are saved every 100,000 transitions, and training
+  progress is visible in the terminal
+- the example requires `deep-learning-core>=0.0.30,<0.1`
+
 ## 0.2.0
 
 - local code follows the component layout for environments, models, callbacks,
