@@ -204,3 +204,48 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
         pressure_config["tracking"]["run_name"]
         != config["tracking"]["run_name"]
     )
+
+    pipelined_config = yaml.safe_load(
+        (project_root / "configs" / "pathfinding_vit_pipelined.yaml").read_text()
+    )
+    assert pipelined_config["environment"] == config["environment"]
+    assert pipelined_config["evaluation_environment"] == config[
+        "evaluation_environment"
+    ]
+    assert pipelined_config["models"] == config["models"]
+    assert pipelined_config["optimizers"] == config["optimizers"]
+    assert pipelined_config["accelerator"] == config["accelerator"]
+    pipelined_dqn = pipelined_config["trainer"]["dqn"]
+    assert {
+        key: value
+        for key, value in pipelined_dqn.items()
+        if key != "overlap_environment_steps"
+    } == config["trainer"]["dqn"]
+    assert pipelined_dqn["overlap_environment_steps"] is True
+    assert pipelined_dqn["checkpoint_frequency"] == 0
+    assert pipelined_dqn["checkpoint_frequency_steps"] == 100_000
+    assert pipelined_dqn["show_progress"] is True
+    assert pipelined_config["tracking"]["backend"] == "wandb"
+    assert pipelined_config["tracking"]["experiment_name"] == config[
+        "tracking"
+    ]["experiment_name"]
+    for setting in (
+        "project",
+        "job_type",
+        "log_config",
+        "episode_log_frequency",
+        "update_log_frequency",
+        "dense_update_count",
+        "watch_log_frequency",
+    ):
+        assert pipelined_config["callbacks"]["sampled_wandb"][setting] == config[
+            "callbacks"
+        ]["sampled_wandb"][setting]
+    assert pipelined_config["runtime"]["name"] not in {
+        config["runtime"]["name"],
+        pressure_config["runtime"]["name"],
+    }
+    assert pipelined_config["tracking"]["run_name"] not in {
+        config["tracking"]["run_name"],
+        pressure_config["tracking"]["run_name"],
+    }

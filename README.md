@@ -104,6 +104,7 @@ uv sync --extra dev
 uv run dl-run --config configs/mapf_dqn.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
+uv run dl-run --config configs/pathfinding_vit_pipelined.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
 ```
@@ -119,6 +120,13 @@ transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM
 for current and next `uint8` observations. A replay batch of 512 with an update
 every 256 collected transitions gives a replay ratio of two while retaining
 efficient ViT batches on the 48 GiB L40S reference GPU.
+
+`configs/pathfinding_vit_pipelined.yaml` keeps the 32-environment, 512-sample
+baseline unchanged and enables DQN collection/learner overlap explicitly.
+After the first vector step, each replay update runs while the next async
+environment step is in flight. W&B receives action-selection, environment
+dispatch/wait, transition-processing, learner, and collector-cycle timings so
+the throughput comparison remains attributable.
 
 `configs/pathfinding_vit_256_envs.yaml` is a separate CPU-pressure benchmark.
 It keeps the 512 replay batch and 256-transition update interval but collects
