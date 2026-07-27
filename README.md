@@ -105,6 +105,7 @@ uv run dl-run --config configs/mapf_dqn.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_pipelined.yaml --validate-only
+uv run dl-run --config configs/pathfinding_vit_compiled.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_pipelined_b1024.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
@@ -128,6 +129,12 @@ After the first vector step, each replay update runs while the next async
 environment step is in flight. W&B receives action-selection, environment
 dispatch/wait, transition-processing, learner, and collector-cycle timings so
 the throughput comparison remains attributable.
+
+`configs/pathfinding_vit_compiled.yaml` keeps the 32-environment, 512-sample
+pipelined benchmark and opts into in-place PyTorch compilation for the online
+and target models. Its first learner calls include compilation warm-up, so
+compare sustained throughput only after those graphs have been cached. The
+model structure and checkpoint keys remain compatible with the eager config.
 
 `configs/pathfinding_vit_pipelined_b1024.yaml` keeps the same environment,
 model, replay ratio, and overlap behavior while sampling 1,024 transitions

@@ -340,3 +340,71 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
     assert (
         large_batch_config["tracking"]["run_name"] not in previous_run_names
     )
+
+    compiled_config = yaml.safe_load(
+        (
+            project_root
+            / "configs"
+            / "pathfinding_vit_compiled.yaml"
+        ).read_text()
+    )
+    assert compiled_config.keys() == pipelined_config.keys()
+    for section in (
+        "seed",
+        "deterministic",
+        "environment",
+        "evaluation_environment",
+        "models",
+        "optimizers",
+        "trainer",
+        "episode_managers",
+    ):
+        assert compiled_config[section] == pipelined_config[section]
+    assert compiled_config["accelerator"] == {
+        **pipelined_config["accelerator"],
+        "compile_models": True,
+        "compile_mode": "default",
+    }
+    for section, metadata_keys in (
+        ("runtime", {"name"}),
+        ("experiment", {"name", "description"}),
+        ("tracking", {"run_name"}),
+    ):
+        assert {
+            key: value
+            for key, value in compiled_config[section].items()
+            if key not in metadata_keys
+        } == {
+            key: value
+            for key, value in pipelined_config[section].items()
+            if key not in metadata_keys
+        }
+    compiled_wandb = compiled_config["callbacks"]["sampled_wandb"]
+    assert {
+        key: value
+        for key, value in compiled_wandb.items()
+        if key not in {"tags", "notes"}
+    } == {
+        key: value
+        for key, value in pipelined_wandb.items()
+        if key not in {"tags", "notes"}
+    }
+    assert compiled_wandb["tags"] == [
+        *pipelined_wandb["tags"],
+        "compiled",
+    ]
+    assert (
+        compiled_config["callbacks"]["local_metric_tracker"]
+        == pipelined_config["callbacks"]["local_metric_tracker"]
+    )
+    assert compiled_config["runtime"]["name"] not in {
+        *previous_runtime_names,
+        large_batch_config["runtime"]["name"],
+    }
+    assert compiled_config["experiment"]["name"] == compiled_config[
+        "runtime"
+    ]["name"]
+    assert compiled_config["tracking"]["run_name"] not in {
+        *previous_run_names,
+        large_batch_config["tracking"]["run_name"],
+    }

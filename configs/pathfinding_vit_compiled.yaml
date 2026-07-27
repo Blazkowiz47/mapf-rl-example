@@ -1,0 +1,125 @@
+seed: 2026
+deterministic: false
+
+runtime:
+  output_dir: artifacts
+  name: pathfinding_vit_2m_32_envs_b512_compiled
+  log_level: INFO
+
+experiment:
+  name: pathfinding_vit_2m_32_envs_b512_compiled
+  description: "Compiled ViT-B/16 DQN with overlapped collection and learning"
+
+tracking:
+  backend: wandb
+  experiment_name: mapf-rl-example
+  run_name: pathfinding-vit-2m-32-envs-b512-compiled
+
+accelerator:
+  type: single_gpu
+  mixed_precision: bf16
+  gradient_accumulation_steps: 1
+  max_grad_norm: 10.0
+  compile_models: true
+  compile_mode: default
+
+environment:
+  name: gymnasium_vector
+  id: ProceduralPathfinding-v0
+  num_envs: 32
+  kwargs:
+    grid_size: 1000
+    observation_size: 256
+    max_steps: 128
+    move_stride: 8
+    wall_count: 100
+    minimum_goal_distance: 160
+    maximum_goal_distance: 480
+    step_reward: -0.01
+    progress_reward: 0.02
+    collision_reward: -0.25
+    goal_reward: 5.0
+
+evaluation_environment:
+  name: gymnasium
+  id: ProceduralPathfinding-v0
+  kwargs:
+    grid_size: 1000
+    observation_size: 256
+    max_steps: 128
+    move_stride: 8
+    wall_count: 100
+    minimum_goal_distance: 160
+    maximum_goal_distance: 480
+    step_reward: -0.01
+    progress_reward: 0.02
+    collision_reward: -0.25
+    goal_reward: 5.0
+
+models:
+  q_network:
+    name: vit_b_16_q_network
+    pretrained: true
+    trainable_blocks: 2
+
+optimizers:
+  name: adamw
+  lr: 0.00003
+  weight_decay: 0.01
+
+trainer:
+  dqn:
+    total_timesteps: 2000000
+    max_episode_steps: 128
+    evaluation_frequency: 2000
+    evaluation_episodes: 10
+    checkpoint_frequency: 0
+    checkpoint_frequency_steps: 100000
+    show_progress: true
+    gamma: 0.99
+    buffer_size: 4096
+    batch_size: 512
+    learning_starts: 4096
+    train_frequency: 256
+    gradient_steps: 1
+    target_update_frequency: 100000
+    double_dqn: true
+    epsilon_start: 1.0
+    epsilon_end: 0.05
+    epsilon_decay_steps: 1500000
+    checkpoint_replay_buffer: false
+    actor_model_copies: 2
+    actor_model_sync_frequency: 25
+    overlap_environment_steps: true
+
+episode_managers:
+  pathfinding:
+    capture_phases: []
+    info_keys:
+      - distance_to_goal
+      - shortest_path_length
+      - path_length
+      - excess_path_length
+      - episode_collisions
+    media_format: none
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 100
+  sampled_wandb:
+    project: mapf-rl-example
+    job_type: train
+    tags:
+      - dl-core
+      - dl-robotics
+      - dqn
+      - vit
+      - pathfinding
+      - pipelined
+      - compiled
+    notes: "Compiled ViT-B/16 DQN with 32 async environments"
+    log_config: true
+    episode_log_frequency: 100
+    update_log_frequency: 100
+    dense_update_count: 100
+    watch_log_frequency: 500
