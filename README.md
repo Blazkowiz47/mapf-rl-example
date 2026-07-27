@@ -105,6 +105,7 @@ uv run dl-run --config configs/mapf_dqn.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_pipelined.yaml --validate-only
+uv run dl-run --config configs/pathfinding_vit_pipelined_b1024.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
 ```
@@ -127,6 +128,14 @@ After the first vector step, each replay update runs while the next async
 environment step is in flight. W&B receives action-selection, environment
 dispatch/wait, transition-processing, learner, and collector-cycle timings so
 the throughput comparison remains attributable.
+
+`configs/pathfinding_vit_pipelined_b1024.yaml` keeps the same environment,
+model, replay ratio, and overlap behavior while sampling 1,024 transitions
+every 512 collected transitions. It halves optimizer-update frequency relative
+to the 512/256 benchmark and tests whether a larger ViT batch improves GPU
+efficiency without reducing replay work per collected transition. It targets
+the 48 GiB L40S reference GPU: the larger activation batch should fit there,
+but has less memory headroom and is not the portable default.
 
 `configs/pathfinding_vit_256_envs.yaml` is a separate CPU-pressure benchmark.
 It keeps the 512 replay batch and 256-transition update interval but collects

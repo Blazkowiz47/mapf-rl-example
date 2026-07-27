@@ -249,3 +249,94 @@ def test_pathfinding_config_defines_the_requested_reference_run() -> None:
         config["tracking"]["run_name"],
         pressure_config["tracking"]["run_name"],
     }
+
+    large_batch_config = yaml.safe_load(
+        (
+            project_root
+            / "configs"
+            / "pathfinding_vit_pipelined_b1024.yaml"
+        ).read_text()
+    )
+    assert large_batch_config.keys() == pipelined_config.keys()
+    for section in (
+        "seed",
+        "deterministic",
+        "accelerator",
+        "environment",
+        "evaluation_environment",
+        "models",
+        "optimizers",
+        "episode_managers",
+    ):
+        assert large_batch_config[section] == pipelined_config[section]
+
+    large_batch_dqn = large_batch_config["trainer"]["dqn"]
+    assert large_batch_dqn["batch_size"] == 1024
+    assert large_batch_dqn["train_frequency"] == 512
+    assert large_batch_dqn["batch_size"] == (
+        2 * large_batch_dqn["train_frequency"]
+    )
+    assert {
+        key: value
+        for key, value in large_batch_dqn.items()
+        if key not in {"batch_size", "train_frequency"}
+    } == {
+        key: value
+        for key, value in pipelined_dqn.items()
+        if key not in {"batch_size", "train_frequency"}
+    }
+
+    for section, metadata_keys in (
+        ("runtime", {"name"}),
+        ("experiment", {"name", "description"}),
+        ("tracking", {"run_name"}),
+    ):
+        assert {
+            key: value
+            for key, value in large_batch_config[section].items()
+            if key not in metadata_keys
+        } == {
+            key: value
+            for key, value in pipelined_config[section].items()
+            if key not in metadata_keys
+        }
+
+    assert (
+        large_batch_config["callbacks"]["local_metric_tracker"]
+        == pipelined_config["callbacks"]["local_metric_tracker"]
+    )
+    large_batch_wandb = large_batch_config["callbacks"]["sampled_wandb"]
+    pipelined_wandb = pipelined_config["callbacks"]["sampled_wandb"]
+    assert {
+        key: value
+        for key, value in large_batch_wandb.items()
+        if key not in {"tags", "notes"}
+    } == {
+        key: value
+        for key, value in pipelined_wandb.items()
+        if key not in {"tags", "notes"}
+    }
+    assert large_batch_wandb["tags"] == [
+        *pipelined_wandb["tags"],
+        "batch-1024",
+    ]
+    assert large_batch_wandb["notes"]
+
+    previous_runtime_names = {
+        config["runtime"]["name"],
+        pressure_config["runtime"]["name"],
+        pipelined_config["runtime"]["name"],
+    }
+    previous_run_names = {
+        config["tracking"]["run_name"],
+        pressure_config["tracking"]["run_name"],
+        pipelined_config["tracking"]["run_name"],
+    }
+    assert large_batch_config["runtime"]["name"] not in previous_runtime_names
+    assert (
+        large_batch_config["experiment"]["name"]
+        == large_batch_config["runtime"]["name"]
+    )
+    assert (
+        large_batch_config["tracking"]["run_name"] not in previous_run_names
+    )
