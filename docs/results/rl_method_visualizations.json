@@ -1,0 +1,93 @@
+{
+  "mapf_dqn": {
+    "checkpoint": "step_000000075000.pth",
+    "collisions": 0,
+    "distance_to_goal": null,
+    "gif": "docs/media/rl_methods/mapf_dqn.gif",
+    "goals_reached": 1,
+    "is_success": false,
+    "return": 2.1800000201910734,
+    "run_name": "mapf_dqn_100k",
+    "seed": 1052026,
+    "steps": 12,
+    "trainer": "dqn"
+  },
+  "mapf_dreamer": {
+    "checkpoint": "step_000000075000.pth",
+    "collisions": 8,
+    "distance_to_goal": null,
+    "gif": "docs/media/rl_methods/mapf_dreamer.gif",
+    "goals_reached": 0,
+    "is_success": false,
+    "return": -1.71999990940094,
+    "run_name": "mapf_dreamer_100k",
+    "seed": 1052026,
+    "steps": 12,
+    "trainer": "dreamer"
+  },
+  "mapf_ppo": {
+    "checkpoint": "step_000000100000.pth",
+    "collisions": 0,
+    "distance_to_goal": null,
+    "gif": "docs/media/rl_methods/mapf_ppo.gif",
+    "goals_reached": 1,
+    "is_success": false,
+    "return": 2.0800000354647636,
+    "run_name": "mapf_ppo_100k",
+    "seed": 1052026,
+    "steps": 12,
+    "trainer": "ppo"
+  },
+  "mapf_q_learning": {
+    "checkpoint": "step_000000100000.pth",
+    "collisions": 0,
+    "distance_to_goal": null,
+    "gif": "docs/media/rl_methods/mapf_q_learning.gif",
+    "goals_reached": 2,
+    "is_success": true,
+    "return": 8.500000178813934,
+    "run_name": "mapf_q_learning_100k",
+    "seed": 1052026,
+    "steps": 10,
+    "trainer": "q_learning"
+  },
+  "mapf_sac": {
+    "checkpoint": "step_000000050000.pth",
+    "collisions": 0,
+    "distance_to_goal": null,
+    "gif": "docs/media/rl_methods/mapf_sac.gif",
+    "goals_reached": 2,
+    "is_success": true,
+    "return": 8.520000040531158,
+    "run_name": "mapf_sac_100k",
+    "seed": 1052026,
+    "steps": 8,
+    "trainer": "sac"
+  },
+  "point_mass_ppo": {
+    "checkpoint": "step_000000075000.pth",
+    "collisions": null,
+    "distance_to_goal": 0.04188323765993118,
+    "gif": "docs/media/rl_methods/point_mass_ppo.gif",
+    "goals_reached": null,
+    "is_success": true,
+    "return": 21.001825660467148,
+    "run_name": "point_mass_velocity_ppo_100k",
+    "seed": 1052026,
+    "steps": 27,
+    "trainer": "ppo"
+  },
+  "point_mass_sac": {
+    "checkpoint": "step_000000100000.pth",
+    "collisions": null,
+    "distance_to_goal": 0.07515059411525726,
+    "gif": "docs/media/rl_methods/point_mass_sac.gif",
+    "goals_reached": null,
+    "is_success": true,
+    "return": 20.898557944223285,
+    "run_name": "point_mass_acceleration_sac_100k",
+    "seed": 1052026,
+    "steps": 34,
+    "trainer": "sac"
+  }
+}

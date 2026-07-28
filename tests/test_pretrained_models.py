@@ -59,3 +59,28 @@ def test_pretrained_model_is_tensor_only_and_complete(
             isinstance(value, torch.Tensor)
             for value in state_dict.values()
         )
+
+
+def test_policy_gallery_matches_selected_checkpoints() -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    evaluation = json.loads(
+        (project_root / "pretrained" / "evaluations.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    gallery = json.loads(
+        (
+            project_root
+            / "docs"
+            / "results"
+            / "rl_method_visualizations.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert len(gallery) == 7
+    for result in gallery.values():
+        assert result["checkpoint"] == evaluation["models"][
+            result["run_name"]
+        ]["selected"]["checkpoint"]
+        gif = project_root / result["gif"]
+        assert gif.read_bytes().startswith(b"GIF")
