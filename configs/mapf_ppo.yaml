@@ -59,7 +59,7 @@ evaluation_environment:
 
 models:
   policy:
-    name: ppo_actor_critic
+    name: example_ppo_policy
     hidden_sizes: [64, 64]
 
 optimizers:
