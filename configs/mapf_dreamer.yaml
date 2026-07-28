@@ -1,17 +1,13 @@
 seed: 2026
 deterministic: true
-
 runtime:
   output_dir: artifacts
   log_level: INFO
-
 experiment:
   name: mapf_dreamer_example
-  description: "Dreamer on a vectorized discrete two-agent crossing task"
-
+  description: Dreamer on a vectorized discrete two-agent crossing task
 accelerator:
   type: single_gpu
-
 environment:
   name: robotics_mapf_vector
   num_envs: 4
@@ -24,9 +20,21 @@ environment:
     width: 5
     height: 5
     max_steps: 12
-    starts: [[0, 0], [4, 4]]
-    goals: [[4, 4], [0, 0]]
-    walls: [[1, 2], [3, 2]]
+    starts:
+    - - 0
+      - 0
+    - - 4
+      - 4
+    goals:
+    - - 4
+      - 4
+    - - 0
+      - 0
+    walls:
+    - - 1
+      - 2
+    - - 3
+      - 2
   rewards:
     step: -0.01
     progress: 0.1
@@ -36,7 +44,6 @@ environment:
   render:
     cell_size: 32
     show_grid: true
-
 evaluation_environment:
   name: robotics_mapf
   observation_builder:
@@ -48,9 +55,21 @@ evaluation_environment:
     width: 5
     height: 5
     max_steps: 12
-    starts: [[0, 0], [4, 4]]
-    goals: [[4, 4], [0, 0]]
-    walls: [[1, 2], [3, 2]]
+    starts:
+    - - 0
+      - 0
+    - - 4
+      - 4
+    goals:
+    - - 4
+      - 4
+    - - 0
+      - 0
+    walls:
+    - - 1
+      - 2
+    - - 3
+      - 2
   rewards:
     step: -0.01
     progress: 0.1
@@ -60,7 +79,6 @@ evaluation_environment:
   render:
     cell_size: 32
     show_grid: true
-
 models:
   world_model:
     name: example_dreamer_world_model
@@ -75,18 +93,16 @@ models:
   critic:
     name: example_dreamer_critic
     hidden_size: 128
-
 optimizers:
   world_model:
     name: adam
     lr: 0.0001
   actor:
     name: adam
-    lr: 0.00003
+    lr: 3.0e-05
   critic:
     name: adam
-    lr: 0.00003
-
+    lr: 3.0e-05
 trainer:
   dreamer:
     total_timesteps: 100000
@@ -107,21 +123,25 @@ trainer:
     gradient_steps: 1
     imagination_horizon: 8
     checkpoint_replay_buffer: true
-
 episode_managers:
   robotics:
-    capture_phases: [evaluation]
+    capture_phases:
+    - evaluation
     capture_every_n_episodes: 1
     max_captured_episodes: 2
     info_keys:
-      - episode_collisions
-      - makespan
-      - sum_of_costs
-      - path_length
+    - episode_collisions
+    - makespan
+    - sum_of_costs
+    - path_length
     media_format: gif
     fps: 6
     cell_size: 32
-
 callbacks:
   local_metric_tracker:
     log_frequency: 1
+tracking:
+  backend: local
+  experiment_name: mapf_dreamer_example
+sweep_file: configs/mapf_dreamer.yaml
+auto_resume_local: true
