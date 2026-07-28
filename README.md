@@ -6,66 +6,57 @@ This is a standalone consumer project showing how
 configuration so new users can follow one complete example without conditional
 trainer logic.
 
-## What's New in 0.8.0?
+## Training Results
 
-- `mapf_dreamer.yaml` demonstrates recurrent model-based RL on the same
-  two-agent crossing task used by the other discrete trainers
-- the example trains a categorical world model, actor, and critic from
-  episode-safe semantic-grid sequences and latent imagined trajectories
-- Dreamer records optimization and replay metrics, evaluation trajectories,
-  GIFs, and a replay-inclusive checkpoint
-- the main trainer presets now run for 100,000 transitions with progress and
-  numbered checkpoints every 25,000 transitions
-- the example requires `deep-learning-core>=0.0.35,<0.1`
+These are deterministic evaluations of the seeded policies trained for
+100,000 transitions on July 28, 2026. Each value is the mean of five held-out
+episodes; all five episodes produced the same result. Dreamer is not included
+because its longer training run is still in progress.
 
-Previous versions are recorded in the [release history](RELEASES.md).
+| MAPF trainer | Transitions | Updates | Return | Steps | Start distance | Final distance | Moved closer | Goals reached | Collisions |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | :---: | :---: | ---: |
+| Q-learning | 100,000 | 100,000 | 8.50 | 10 | 16 | 0 | Yes | 2/2 | 0 |
+| DQN | 100,000 | 24,751 | 2.08 | 12 | 16 | 4 | Yes | 1/2 | 0 |
+| PPO | 100,000 | 196 | 2.08 | 12 | 16 | 4 | Yes | 1/2 | 0 |
+| SAC adapter | 100,000 | 24,751 | 2.18 | 12 | 16 | 3 | Yes | 1/2 | 0 |
 
-## Smoke-Training Results
+Q-learning solved the complete crossing task. The three neural policies moved
+both actors closer without collisions and delivered one actor to its goal
+within the 12-step limit. MAPF distance is the sum of each actor's Manhattan
+distance to its assigned goal.
 
-These are the final deterministic evaluations from the seeded short CPU runs
-on July 28, 2026. They verify that every environment, trainer, update path,
-evaluation, checkpoint, and artifact pipeline works end to end. The budgets
-were intentionally tiny and should not be read as convergence benchmarks.
-They are retained as the first reproducible baseline; the current
-configurations now default to 100,000 transitions.
+| Point-mass trainer | Transitions | Updates | Return | Steps | Start distance | Final distance | Moved closer | Goal reached |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | :---: | :---: |
+| SAC acceleration control | 100,000 | 24,751 | 20.90 | 34 | 11.31 | 0.08 | Yes | Yes |
+| PPO velocity control | 100,000 | 196 | 20.97 | 27 | 11.31 | 0.07 | Yes | Yes |
 
-| MAPF trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer | Collisions |
-| --- | ---: | ---: | ---: | ---: | ---: | :---: | ---: |
-| Q-learning | 64 | 64 | 0.58 | 16 | 9 | Yes | 0 |
-| DQN | 64 | 15 | -2.72 | 16 | 7 | Yes | 14 |
-| Dreamer | 64 | 5 | -4.72 | 16 | 12 | Yes | 20 |
-| PPO | 64 | 4 | -1.37 | 16 | 11 | Yes | 7 |
-| SAC adapter | 64 | 15 | -0.12 | 16 | 16 | No | 0 |
+Both continuous policies entered the configured goal radius. Velocity control
+reached it in 27 steps, while acceleration control reached it in 34 steps using
+the environment's kinematic integration.
 
-Each final MAPF evaluation ran for the 12-step limit. Q-learning produced the
-best final return and moved without collisions. DQN achieved the largest
-distance reduction but incurred 14 collisions. Dreamer reduced the joint
-distance by four cells but incurred 20 boundary collisions after only five
-model updates. The SAC adapter learned a collision-free no-op policy at this
-budget, which illustrates why quantized continuous control is not a natural
-fit for the discrete task.
+The complete local metrics, trajectories, animations, logs, and resumable
+checkpoints remain beneath
+`artifacts/sweeps/<run-name>/<run-name>/final/`.
 
-| Point-mass trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer |
-| --- | ---: | ---: | ---: | ---: | ---: | :---: |
-| SAC acceleration control | 128 | 29 | 1.15 | 11.31 | 9.16 | Yes |
-| PPO velocity control | 128 | 4 | 5.39 | 11.31 | 4.92 | Yes |
+## Trained Models
 
-Both point-mass policies moved closer to the goal during their 100-step final
-evaluations. Velocity-controlled PPO made the larger reduction, but neither
-entered the configured goal radius. Re-run with larger `total_timesteps`
-values before comparing learning quality.
+The repository includes one compact inference model per completed use case.
+Replay buffers, optimizer state, metric history, and intermediate checkpoints
+are intentionally excluded.
 
-Every trainer did update during these runs. Q-learning applied 64 direct
-Q-table updates; DQN and MAPF SAC applied 15 optimizer updates each; Dreamer
-applied five world-model, actor, and critic updates; acceleration SAC applied
-29; and the two PPO runs applied four rollout updates each. No progress bars
-appeared in those recorded runs because the earlier presets left
-`show_progress` at its default `false`; detailed update metrics were still
-written to each run's `final/metrics/` directory. The current training presets
-set `show_progress: true`.
+| Use case | Model | Inference state |
+| --- | --- | --- |
+| MAPF Q-learning | [`mapf_q_learning_100k.pt`](pretrained/mapf_q_learning_100k.pt) | Q-table |
+| MAPF DQN | [`mapf_dqn_100k.pt`](pretrained/mapf_dqn_100k.pt) | Online Q-network |
+| MAPF PPO | [`mapf_ppo_100k.pt`](pretrained/mapf_ppo_100k.pt) | Actor-critic policy |
+| MAPF SAC adapter | [`mapf_sac_100k.pt`](pretrained/mapf_sac_100k.pt) | Actor |
+| Point-mass acceleration SAC | [`point_mass_acceleration_sac_100k.pt`](pretrained/point_mass_acceleration_sac_100k.pt) | Actor |
+| Point-mass velocity PPO | [`point_mass_velocity_ppo_100k.pt`](pretrained/point_mass_velocity_ppo_100k.pt) | Actor-critic policy |
 
-The complete metrics, trajectories, animations, logs, and checkpoints are
-written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`.
+Load any file with `torch.load(path, map_location="cpu", weights_only=True)`.
+The artifact names its matching configuration and exposes the learned tensors
+under `policy_state_dict`. Exact evaluation values are also available in
+[`pretrained/evaluations.json`](pretrained/evaluations.json).
 
 ## Trainer Examples
 

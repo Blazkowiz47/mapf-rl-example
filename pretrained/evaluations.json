@@ -1,0 +1,72 @@
+{
+  "mapf_dqn_100k": {
+    "collisions": 0,
+    "final_distance": 4,
+    "goals_reached": 1,
+    "mean_length": 12.0,
+    "mean_return": 2.080000003799796,
+    "moved_closer": true,
+    "start_distance": 16,
+    "success_rate": 0.0,
+    "transitions": 100000,
+    "updates": 24751
+  },
+  "mapf_ppo_100k": {
+    "collisions": 0,
+    "final_distance": 4,
+    "goals_reached": 1,
+    "mean_length": 12.0,
+    "mean_return": 2.0800000354647636,
+    "moved_closer": true,
+    "start_distance": 16,
+    "success_rate": 0.0,
+    "transitions": 100000,
+    "updates": 196
+  },
+  "mapf_q_learning_100k": {
+    "collisions": 0,
+    "final_distance": 0,
+    "goals_reached": 2,
+    "mean_length": 10.0,
+    "mean_return": 8.500000178813934,
+    "moved_closer": true,
+    "start_distance": 16,
+    "success_rate": 1.0,
+    "transitions": 100000,
+    "updates": 100000
+  },
+  "mapf_sac_100k": {
+    "collisions": 0,
+    "final_distance": 3,
+    "goals_reached": 1,
+    "mean_length": 12.0,
+    "mean_return": 2.180000053718686,
+    "moved_closer": true,
+    "start_distance": 16,
+    "success_rate": 0.0,
+    "transitions": 100000,
+    "updates": 24751
+  },
+  "point_mass_acceleration_sac_100k": {
+    "final_distance": 0.07515059411525726,
+    "goal_reached": true,
+    "mean_length": 34.0,
+    "mean_return": 20.898557944223285,
+    "moved_closer": true,
+    "start_distance": 11.313708305358887,
+    "success_rate": 1.0,
+    "transitions": 100000,
+    "updates": 24751
+  },
+  "point_mass_velocity_ppo_100k": {
+    "final_distance": 0.0712292492389679,
+    "goal_reached": true,
+    "mean_length": 27.0,
+    "mean_return": 20.972479283809662,
+    "moved_closer": true,
+    "start_distance": 11.313708305358887,
+    "success_rate": 1.0,
+    "transitions": 100000,
+    "updates": 196
+  }
+}
