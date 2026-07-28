@@ -7,12 +7,12 @@ from .sac import ExampleSACActor, ExampleSACCritics
 from .vit_q_network import ViTB16QNetwork
 
 __all__ = [
+    "DreamerActor",
+    "DreamerCritic",
+    "DreamerWorldModel",
     "ExampleDQNMLP",
     "ExamplePPOPolicy",
     "ExampleSACActor",
     "ExampleSACCritics",
-    "DreamerActor",
-    "DreamerCritic",
-    "DreamerWorldModel",
     "ViTB16QNetwork",
 ]
