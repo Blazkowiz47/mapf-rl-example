@@ -31,6 +31,7 @@ _COLORS = (
     (220, 38, 38),
     (22, 163, 74),
 )
+_WALL_COLOR = (42, 52, 68)
 _ACTION_BY_DELTA = {
     (0, 0): 0,
     (-1, 0): 1,
@@ -57,11 +58,11 @@ def main(argv: Sequence[str] | None = None) -> None:
         choices=("gif", "mp4", "both"),
         default="gif",
     )
-    parser.add_argument("--grid-size", type=int, default=2000)
-    parser.add_argument("--render-size", type=int, default=400)
+    parser.add_argument("--grid-size", type=int, default=500)
+    parser.add_argument("--render-size", type=int, default=500)
     parser.add_argument("--max-frames", type=int, default=60)
     parser.add_argument("--fps", type=int, default=6)
-    parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--seed", type=int, default=2030)
     args = parser.parse_args(argv)
     for label, value, minimum in (
         ("grid-size", args.grid_size, 64),
@@ -305,6 +306,16 @@ def main(argv: Sequence[str] | None = None) -> None:
             raise RuntimeError(
                 "The simultaneous schedule did not complete collision-free"
             )
+        wall_entries = int(
+            blocked[
+                positions[:, :, 0],
+                positions[:, :, 1],
+            ].sum()
+        )
+        if wall_entries:
+            raise RuntimeError(
+                "A planned schedule entered a blocked cell"
+            )
 
         plans[name] = paths
         schedules[name] = positions
@@ -313,6 +324,7 @@ def main(argv: Sequence[str] | None = None) -> None:
             "start_delays": delays,
             "schedule_steps": len(positions) - 1,
             "collisions": collisions,
+            "wall_entries": wall_entries,
             "planning_seconds": round(
                 time.perf_counter() - planning_started,
                 4,
@@ -333,7 +345,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         248,
         dtype=np.uint8,
     )
-    base[wall_pixels] = (42, 52, 68)
+    base[wall_pixels] = _WALL_COLOR
     route_bases = {}
     route_scale = (args.render_size - 1) / (scenario.width - 1)
     for name, paths in plans.items():
@@ -357,6 +369,7 @@ def main(argv: Sequence[str] | None = None) -> None:
                 max(1, args.render_size // 500),
                 cv2.LINE_AA,
             )
+        route_base[wall_pixels] = _WALL_COLOR
         route_bases[name] = route_base
 
     output_formats = (
@@ -453,6 +466,7 @@ def main(argv: Sequence[str] | None = None) -> None:
                         max(1, radius // 4),
                         cv2.LINE_AA,
                     )
+                frame[wall_pixels] = _WALL_COLOR
                 title_height = max(36, args.render_size // 18)
                 titled = np.full(
                     (

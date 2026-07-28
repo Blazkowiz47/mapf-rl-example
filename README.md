@@ -220,8 +220,8 @@ uv run python scripts/print_classical_baselines.py
 uv run python scripts/visualize_classical_planners.py
 ```
 
-The visualizer builds a seeded 2000×2000 maze, plans for three actors, and
-executes their delayed schedules without vertex conflicts or edge swaps.
+The visualizer builds a seeded 500×500 maze, plans for three actors, and
+executes their delayed schedules without wall, vertex, or edge-swap conflicts.
 
 ![A 2x2 comparison of A-star, Dijkstra, BFS, and DFS](docs/media/classical_planners/comparison.gif)
 

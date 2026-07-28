@@ -18,7 +18,7 @@ from dl_robotics import (
     dijkstra_path,
 )
 
-import rules  # noqa: F401
+import bootstrap  # noqa: F401
 from scenarios import make_two_agent_crossing_scenario
 
 
@@ -79,7 +79,7 @@ def test_classical_planner_visualizations(tmp_path: Path) -> None:
 
     report = json.loads(result.stdout)
 
-    assert report["scenario"] == "procedural_128_2026"
+    assert report["scenario"] == "procedural_128_2030"
     assert report["logical_grid"] == [128, 128]
     assert report["rendered_frames"] == 12
     assert report["wall_cells"] > 0
@@ -102,6 +102,10 @@ def test_classical_planner_visualizations(tmp_path: Path) -> None:
     )
     assert all(
         algorithm["collisions"] == 0
+        for algorithm in report["algorithms"].values()
+    )
+    assert all(
+        algorithm["wall_entries"] == 0
         for algorithm in report["algorithms"].values()
     )
 
