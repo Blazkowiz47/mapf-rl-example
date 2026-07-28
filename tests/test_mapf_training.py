@@ -155,6 +155,8 @@ def test_vector_dqn_trains_and_captures_evaluation_episode(
     config = yaml.safe_load(
         (project_root / "configs" / "mapf_dqn.yaml").read_text()
     )
+    assert config["accelerator"]["type"] == "single_gpu"
+    config["accelerator"] = {"type": "cpu"}
     config["runtime"]["output_dir"] = str(tmp_path / "artifacts")
     config["runtime"]["name"] = "test_mapf_dqn"
     config["trainer"]["dqn"].update(

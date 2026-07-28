@@ -261,8 +261,8 @@ nvtx = [
 
 [[package]]
 name = "deep-learning-core"
-version = "0.0.34"
-source = { editable = "../dl-core" }
+version = "0.0.35"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "albumentations" },
     { name = "gymnasium" },
@@ -278,33 +278,15 @@ dependencies = [
     { name = "torchvision" },
     { name = "tqdm" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "albumentations" },
-    { name = "deep-learning-azure", marker = "extra == 'azure'", specifier = ">=0.0.18,<0.1" },
-    { name = "deep-learning-mlflow", marker = "extra == 'mlflow'", specifier = ">=0.0.11,<0.1" },
-    { name = "deep-learning-wandb", marker = "extra == 'wandb'", specifier = ">=0.0.12,<0.1" },
-    { name = "gymnasium", specifier = ">=1.3,<2" },
-    { name = "numpy" },
-    { name = "opencv-python-headless" },
-    { name = "psutil" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
-    { name = "pyyaml" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },
-    { name = "scikit-learn" },
-    { name = "torch" },
-    { name = "torchvision" },
-    { name = "tqdm" },
-    { name = "twine", marker = "extra == 'dev'", specifier = ">=6.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/6d/e5/d777bafdb075754128189fcdaf3e4b2f1eb46d9cfdd3ec29bac189e0631e/deep_learning_core-0.0.35.tar.gz", hash = "sha256:7031c0e097310fa8be8a45a3117dc22b022bd68141a6392594f871c530ffd94d", size = 606577, upload-time = "2026-07-28T10:14:43.36Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/bf/664b59fa0aada1b0177331043fa06e466079e5d8da3fac8ce43fed59c87a/deep_learning_core-0.0.35-py3-none-any.whl", hash = "sha256:f9d4b8ac5e83f87aeb32e3a14530288c40d9a451a4812487917e16a96d924541", size = 323936, upload-time = "2026-07-28T10:14:41.707Z" },
 ]
-provides-extras = ["azure", "mlflow", "wandb", "dev"]
 
 [[package]]
 name = "deep-learning-robotics"
 version = "0.0.5"
-source = { editable = "../dl-robotics" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deep-learning-core" },
     { name = "gymnasium" },
@@ -315,40 +297,23 @@ dependencies = [
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "opencv-python-headless" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "deep-learning-core", editable = "../dl-core" },
-    { name = "gymnasium", specifier = ">=1.3,<2" },
-    { name = "imageio", specifier = ">=2.34" },
-    { name = "imageio-ffmpeg", specifier = ">=0.5" },
-    { name = "numpy" },
-    { name = "opencv-python-headless" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },
-    { name = "twine", marker = "extra == 'dev'", specifier = ">=6.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/b6/30/89fb3f54ea580fcfb862b345ee218a160d80883df35b3592274c630fb32a/deep_learning_robotics-0.0.5.tar.gz", hash = "sha256:452149e6673eb098f3302e1bd9f44869645ff3cf7a9e3d7d7ee6d4ac20b28127", size = 175559, upload-time = "2026-07-27T18:28:23.239Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5c/0c/504f80ab9fd8aebce61462ee44321f78b8124b01508e4c6ca77cbee0e036/deep_learning_robotics-0.0.5-py3-none-any.whl", hash = "sha256:ac8de07a06ec5267645fb1d7d339e0722d63fed15107785070ab8d6547fa1a07", size = 31389, upload-time = "2026-07-27T18:28:21.75Z" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "deep-learning-wandb"
 version = "0.0.14"
-source = { editable = "../dl-wandb" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deep-learning-core" },
     { name = "wandb" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "deep-learning-core", specifier = ">=0.0.34,<0.1" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },
-    { name = "twine", marker = "extra == 'dev'", specifier = ">=6.0" },
-    { name = "wandb" },
+sdist = { url = "https://files.pythonhosted.org/packages/65/c0/4a9c8c9f0d99b0b96be57ca29a17a09925c759b05e8d447f412060e10b45/deep_learning_wandb-0.0.14.tar.gz", hash = "sha256:365f65fb87ab20935ea74d76b38e4682983cdec58e305504d8276e669012a4c6", size = 160381, upload-time = "2026-07-27T18:29:40.354Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/e8/858fa7e275b48eb446c071c15e007d733a075c302e691686882052e9505b/deep_learning_wandb-0.0.14-py3-none-any.whl", hash = "sha256:c5f218ef9593bd22e68ac7ba96081ad81d11cd2987c4ddd58bfeb030ca898d55", size = 12144, upload-time = "2026-07-27T18:29:39.284Z" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "exceptiongroup"
@@ -476,7 +441,7 @@ wheels = [
 
 [[package]]
 name = "mapf-rl-example"
-version = "0.7.0"
+version = "0.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "deep-learning-core" },
@@ -498,9 +463,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "deep-learning-core", editable = "../dl-core" },
-    { name = "deep-learning-robotics", editable = "../dl-robotics" },
-    { name = "deep-learning-wandb", editable = "../dl-wandb" },
+    { name = "deep-learning-core", specifier = ">=0.0.35,<0.1" },
+    { name = "deep-learning-robotics", specifier = ">=0.0.5,<0.1" },
+    { name = "deep-learning-wandb", specifier = ">=0.0.14,<0.1" },
     { name = "imageio", specifier = ">=2.34" },
     { name = "numpy" },
     { name = "opencv-python-headless" },

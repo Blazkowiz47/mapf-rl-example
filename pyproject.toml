@@ -4,12 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mapf-rl-example"
-version = "0.7.0"
+version = "0.8.0"
 description = "Standalone RL trainer, MAPF, and continuous-control examples."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "deep-learning-core>=0.0.34,<0.1",
+    "deep-learning-core>=0.0.35,<0.1",
     "deep-learning-robotics>=0.0.5,<0.1",
     "deep-learning-wandb>=0.0.14,<0.1",
     "imageio>=2.34",
@@ -27,8 +27,3 @@ dev = [
 [tool.hatch.build.targets.wheel]
 only-include = ["src"]
 sources = ["src"]
-
-[tool.uv.sources]
-deep-learning-core = { path = "../dl-core", editable = true }
-deep-learning-robotics = { path = "../dl-robotics", editable = true }
-deep-learning-wandb = { path = "../dl-wandb", editable = true }

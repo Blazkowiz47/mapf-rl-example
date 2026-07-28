@@ -6,6 +6,20 @@ This is a standalone consumer project showing how
 configuration so new users can follow one complete example without conditional
 trainer logic.
 
+## What's New in 0.8.0?
+
+- `mapf_dreamer.yaml` demonstrates recurrent model-based RL on the same
+  two-agent crossing task used by the other discrete trainers
+- the example trains a categorical world model, actor, and critic from
+  episode-safe semantic-grid sequences and latent imagined trajectories
+- Dreamer records optimization and replay metrics, evaluation trajectories,
+  GIFs, and a replay-inclusive checkpoint
+- the main trainer presets now run for 100,000 transitions with progress and
+  numbered checkpoints every 25,000 transitions
+- the example requires `deep-learning-core>=0.0.35,<0.1`
+
+Previous versions are recorded in the [release history](RELEASES.md).
+
 ## Smoke-Training Results
 
 These are the final deterministic evaluations from the seeded short CPU runs
@@ -19,15 +33,17 @@ configurations now default to 100,000 transitions.
 | --- | ---: | ---: | ---: | ---: | ---: | :---: | ---: |
 | Q-learning | 64 | 64 | 0.58 | 16 | 9 | Yes | 0 |
 | DQN | 64 | 15 | -2.72 | 16 | 7 | Yes | 14 |
+| Dreamer | 64 | 5 | -4.72 | 16 | 12 | Yes | 20 |
 | PPO | 64 | 4 | -1.37 | 16 | 11 | Yes | 7 |
 | SAC adapter | 64 | 15 | -0.12 | 16 | 16 | No | 0 |
 
 Each final MAPF evaluation ran for the 12-step limit. Q-learning produced the
 best final return and moved without collisions. DQN achieved the largest
-distance reduction but incurred 14 collisions, so its lower return correctly
-reflects unsafe movement. The SAC adapter learned a collision-free no-op policy
-at this budget, which illustrates why quantized continuous control is not a
-natural fit for the discrete task.
+distance reduction but incurred 14 collisions. Dreamer reduced the joint
+distance by four cells but incurred 20 boundary collisions after only five
+model updates. The SAC adapter learned a collision-free no-op policy at this
+budget, which illustrates why quantized continuous control is not a natural
+fit for the discrete task.
 
 | Point-mass trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer |
 | --- | ---: | ---: | ---: | ---: | ---: | :---: |
@@ -40,51 +56,93 @@ entered the configured goal radius. Re-run with larger `total_timesteps`
 values before comparing learning quality.
 
 Every trainer did update during these runs. Q-learning applied 64 direct
-Q-table updates; DQN and MAPF SAC applied 15 optimizer updates each;
-acceleration SAC applied 29; and the two PPO runs applied four rollout updates
-each. No progress bars appeared in those recorded runs because the earlier
-presets left `show_progress` at its default `false`; detailed update metrics
-were still written to each run's `final/metrics/` directory. The current
-training presets set `show_progress: true`.
+Q-table updates; DQN and MAPF SAC applied 15 optimizer updates each; Dreamer
+applied five world-model, actor, and critic updates; acceleration SAC applied
+29; and the two PPO runs applied four rollout updates each. No progress bars
+appeared in those recorded runs because the earlier presets left
+`show_progress` at its default `false`; detailed update metrics were still
+written to each run's `final/metrics/` directory. The current training presets
+set `show_progress: true`.
 
 The complete metrics, trajectories, animations, logs, and checkpoints are
-written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`. Previous
-versions are recorded in the [release history](RELEASES.md).
+written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`.
 
 ## Trainer Examples
 
-The training configurations cover every complete built-in RL trainer except
-the still-evolving Dreamer implementation. Tabular Q-learning runs on CPU;
-neural trainers use the configured single GPU:
+The training configurations cover every built-in RL trainer. Tabular
+Q-learning runs on CPU; neural trainers use the configured single GPU:
 
 | Configuration | Trainer | Observation | Action |
 | --- | --- | --- | --- |
 | `mapf_q_learning.yaml` | Q-learning | `Discrete(625)` ordered joint positions | 25 joint grid moves |
 | `mapf_dqn.yaml` | DQN | 7-channel semantic grid | 25 joint grid moves |
+| `mapf_dreamer.yaml` | Dreamer | 7-channel semantic grid sequences | 25 joint grid moves |
 | `mapf_ppo.yaml` | PPO | 7-channel semantic grid | 25 joint grid moves |
 | `mapf_sac.yaml` | SAC | 7-channel semantic grid | two continuous movement vectors |
 | `point_mass_acceleration_sac.yaml` | SAC | position, velocity, and goal | acceleration |
 | `point_mass_velocity_ppo.yaml` | PPO | position, velocity, and goal | velocity |
 
-The four MAPF configurations use the same two actors exchanging opposite
+The five MAPF configurations use the same two actors exchanging opposite
 corners of a 5×5 grid. Four worlds collect experience in parallel, while a
 separate scalar world performs deterministic evaluation. The robotics episode
 manager records MAPF metrics, the full evaluation trajectory, and an animated
 GIF.
 
 Q-learning has a dedicated `TabularMAPFObservationBuilder`; it maps ordered
-actor cells to one finite state without creating a neural network. PPO and DQN
-use the original discrete environment directly. SAC has its own
+actor cells to one finite state without creating a neural network. PPO, DQN,
+and Dreamer use the original discrete environment directly. SAC has its own
 `ContinuousActionMAPFEnv`, where each actor emits a bounded
 `[vertical, horizontal]` command that is quantized to stay, up, right, down, or
 left before the unchanged grid physics runs. That adapter demonstrates the SAC
 interface on the same task, but SAC is not a natural algorithmic baseline for
 an inherently discrete action space.
 
-All MAPF examples persist evaluation trajectories. PPO, DQN, and SAC also
-render GIFs from their spatial observations. The Q-learning configuration uses
-`media_format: none` because its deliberately minimal scalar state does not
-contain renderable grid channels.
+All MAPF examples persist evaluation trajectories. PPO, DQN, Dreamer, and SAC
+also render GIFs from their spatial observations. The Q-learning configuration
+uses `media_format: none` because its deliberately minimal scalar state does
+not contain renderable grid channels.
+
+## Dreamer MAPF Flow
+
+The Dreamer example explicitly selects the compact `semantic_grid` observation
+builder. Each world emits a `7 × 5 × 5` tensor, which the world model flattens
+and encodes without storing high-resolution RGB frames.
+
+```mermaid
+flowchart LR
+    E["Four MAPF worlds"] --> O["Semantic observations"]
+    O --> S["Recurrent latent state"]
+    S --> A["Actor: 25 joint actions"]
+    A --> E
+    E --> R["Episode-safe sequence replay"]
+    R --> W["World-model learning"]
+    W --> I["Imagined latent trajectories"]
+    I --> A
+    I --> C["Critic and target critic"]
+```
+
+Replay samples eight learning transitions with two burn-in transitions so the
+recurrent state receives episode context before contributing losses. Every 16
+collected transitions, Dreamer updates its observation, reward, and
+continuation model, then trains the actor and critic from eight-step latent
+imaginations.
+
+The local metric callback persists world-model, reconstruction, reward,
+continuation, KL, actor, critic, entropy, imagined-return, replay, and timing
+metrics. To send the same scalar stream to W&B while retaining the local
+JSONL files, configure both callbacks:
+
+```yaml
+callbacks:
+  local_metric_tracker:
+    log_frequency: 1
+  wandb:
+    project: mapf-dreamer-example
+```
+
+The snippet selects the standard `wandb` callback because the local
+`sampled_wandb` callback is specialized for the long ViT-DQN run and its
+`online` Q-network.
 
 The repository also contains `ProceduralPathfindingEnv`, a single-agent
 Gymnasium environment for the ViT pathfinding example. Every reset replaces the
@@ -234,10 +292,12 @@ constraint.
 uv sync --extra dev
 uv run dl-run --config configs/mapf_q_learning.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml --validate-only
+uv run dl-run --config configs/mapf_dreamer.yaml --validate-only
 uv run dl-run --config configs/mapf_ppo.yaml --validate-only
 uv run dl-run --config configs/mapf_sac.yaml --validate-only
 uv run dl-run --config configs/point_mass_acceleration_sac.yaml --validate-only
 uv run dl-run --config configs/point_mass_velocity_ppo.yaml --validate-only
+uv run dl-run --config configs/mapf_dreamer.yaml
 uv run dl-run --config configs/mapf_ppo.yaml
 uv run dl-run --config configs/point_mass_acceleration_sac.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only

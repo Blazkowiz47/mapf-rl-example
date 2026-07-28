@@ -3,7 +3,17 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
-## Unreleased
+## 0.8.0
+
+- a compact semantic-grid MAPF configuration demonstrates recurrent Dreamer
+  collection, sequence replay, world-model learning, and latent imagination
+- Dreamer persists optimization metrics, evaluation trajectories, GIFs, and a
+  replay-inclusive final checkpoint
+- all main trainer presets now use 100,000 transitions, progress display, and
+  numbered checkpoints every 25,000 transitions
+- the example requires `deep-learning-core>=0.0.35,<0.1`
+
+## 0.7.0
 
 - standalone MAPF configurations now demonstrate tabular Q-learning, DQN, PPO,
   and SAC while keeping trainer-specific state and action adapters separate
