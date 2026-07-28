@@ -63,16 +63,18 @@ evaluation_environment:
 
 trainer:
   q_learning:
-    total_timesteps: 64
+    total_timesteps: 100000
     max_episode_steps: 12
-    evaluation_frequency: 4
-    evaluation_episodes: 1
+    evaluation_frequency: 1000
+    evaluation_episodes: 5
     checkpoint_frequency: 0
+    checkpoint_frequency_steps: 25000
+    show_progress: true
     learning_rate: 0.1
     gamma: 0.99
     epsilon_start: 1.0
     epsilon_end: 0.10
-    epsilon_decay_steps: 64
+    epsilon_decay_steps: 75000
 
 episode_managers:
   robotics:

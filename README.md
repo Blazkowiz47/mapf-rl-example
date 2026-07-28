@@ -11,7 +11,9 @@ trainer logic.
 These are the final deterministic evaluations from the seeded short CPU runs
 on July 28, 2026. They verify that every environment, trainer, update path,
 evaluation, checkpoint, and artifact pipeline works end to end. The budgets
-are intentionally tiny and should not be read as convergence benchmarks.
+were intentionally tiny and should not be read as convergence benchmarks.
+They are retained as the first reproducible baseline; the current
+configurations now default to 100,000 transitions.
 
 | MAPF trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer | Collisions |
 | --- | ---: | ---: | ---: | ---: | ---: | :---: | ---: |
@@ -40,9 +42,10 @@ values before comparing learning quality.
 Every trainer did update during these runs. Q-learning applied 64 direct
 Q-table updates; DQN and MAPF SAC applied 15 optimizer updates each;
 acceleration SAC applied 29; and the two PPO runs applied four rollout updates
-each. No progress bars appeared because these short configurations leave
-`show_progress` at its default `false`; detailed update metrics were still
-written to each run's `final/metrics/` directory.
+each. No progress bars appeared in those recorded runs because the earlier
+presets left `show_progress` at its default `false`; detailed update metrics
+were still written to each run's `final/metrics/` directory. The current
+training presets set `show_progress: true`.
 
 The complete metrics, trajectories, animations, logs, and checkpoints are
 written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`. Previous
@@ -50,8 +53,9 @@ versions are recorded in the [release history](RELEASES.md).
 
 ## Trainer Examples
 
-The short CPU configurations cover every complete built-in RL trainer except
-the still-evolving Dreamer implementation:
+The training configurations cover every complete built-in RL trainer except
+the still-evolving Dreamer implementation. Tabular Q-learning runs on CPU;
+neural trainers use the configured single GPU:
 
 | Configuration | Trainer | Observation | Action |
 | --- | --- | --- | --- |
@@ -244,11 +248,17 @@ uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
 ```
 
-The short CPU configurations are integration examples, not convergence
-benchmarks. Increase the selected trainer's `total_timesteps` for a meaningful
-learning experiment. `pathfinding_vit_dqn.yaml` is the separate GPU reference
-configuration. Thirty-two environment processes generate and step procedural
-tasks concurrently, while the main process batches policy inference and replay
+The main configurations now default to 100,000 transitions, display progress,
+evaluate periodically, and save numbered checkpoints every 25,000 transitions.
+Neural trainers use `single_gpu`; tabular Q-learning remains on CPU. They are
+meaningful training sessions rather than instant smoke runs, although
+convergence still depends on the algorithm and task. The historical results
+above came from the earlier 64/128-transition validation budgets and should be
+replaced after the longer runs complete.
+
+`pathfinding_vit_dqn.yaml` is the separate GPU reference configuration.
+Thirty-two environment processes generate and step procedural tasks
+concurrently, while the main process batches policy inference and replay
 updates on the GPU. DQN is budgeted for two million environment transitions,
 displays a progress bar, and saves a numbered checkpoint every 100,000
 transitions. The 4096-transition replay buffer uses about 1.5 GiB of host RAM

@@ -10,7 +10,7 @@ experiment:
   description: "Centralized DQN on a two-agent crossing task"
 
 accelerator:
-  type: cpu
+  type: single_gpu
 
 environment:
   name: robotics_mapf_vector
@@ -68,22 +68,24 @@ optimizers:
 
 trainer:
   dqn:
-    total_timesteps: 64
+    total_timesteps: 100000
     max_episode_steps: 12
-    evaluation_frequency: 4
-    evaluation_episodes: 1
+    evaluation_frequency: 1000
+    evaluation_episodes: 5
     checkpoint_frequency: 0
+    checkpoint_frequency_steps: 25000
+    show_progress: true
     gamma: 0.99
-    buffer_size: 256
-    batch_size: 8
-    learning_starts: 8
+    buffer_size: 25000
+    batch_size: 64
+    learning_starts: 1000
     train_frequency: 4
     gradient_steps: 1
-    target_update_frequency: 32
+    target_update_frequency: 1000
     double_dqn: true
     epsilon_start: 1.0
     epsilon_end: 0.10
-    epsilon_decay_steps: 64
+    epsilon_decay_steps: 75000
 
 episode_managers:
   robotics:

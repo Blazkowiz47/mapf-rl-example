@@ -157,6 +157,19 @@ def test_vector_dqn_trains_and_captures_evaluation_episode(
     )
     config["runtime"]["output_dir"] = str(tmp_path / "artifacts")
     config["runtime"]["name"] = "test_mapf_dqn"
+    config["trainer"]["dqn"].update(
+        {
+            "total_timesteps": 64,
+            "evaluation_frequency": 4,
+            "evaluation_episodes": 1,
+            "show_progress": False,
+            "buffer_size": 256,
+            "batch_size": 8,
+            "learning_starts": 8,
+            "target_update_frequency": 32,
+            "epsilon_decay_steps": 64,
+        }
+    )
     trainer = DQNTrainer(config)
     trainer.setup()
 

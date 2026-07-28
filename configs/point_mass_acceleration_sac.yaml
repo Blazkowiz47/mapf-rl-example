@@ -10,7 +10,7 @@ experiment:
   description: "SAC controls acceleration in a continuous kinematics environment"
 
 accelerator:
-  type: cpu
+  type: single_gpu
 
 environment:
   name: gymnasium_vector
@@ -59,15 +59,17 @@ optimizers:
 
 trainer:
   sac:
-    total_timesteps: 128
+    total_timesteps: 100000
     max_episode_steps: 100
-    evaluation_frequency: 1
-    evaluation_episodes: 1
+    evaluation_frequency: 100
+    evaluation_episodes: 5
     checkpoint_frequency: 0
+    checkpoint_frequency_steps: 25000
+    show_progress: true
     gamma: 0.99
-    buffer_size: 512
-    batch_size: 16
-    learning_starts: 16
+    buffer_size: 100000
+    batch_size: 256
+    learning_starts: 1000
     train_frequency: 4
     gradient_steps: 1
     tau: 0.01

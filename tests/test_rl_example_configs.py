@@ -33,9 +33,25 @@ def test_rl_example_performs_short_training(
     trainer_name = next(iter(config["trainer"]))
     config["runtime"]["output_dir"] = str(tmp_path / "artifacts")
     config["runtime"]["name"] = f"test_{Path(config_name).stem}"
+    smoke_timesteps = 64 if captures_evaluation else 32
+    trainer_config = config["trainer"][trainer_name]
+    trainer_config["total_timesteps"] = smoke_timesteps
+    trainer_config["show_progress"] = False
+    if trainer_name == "sac":
+        trainer_config["buffer_size"] = 256
+        trainer_config["batch_size"] = 8
+        trainer_config["learning_starts"] = 8
+    elif trainer_name == "ppo":
+        trainer_config["rollout_steps"] = 4
+        trainer_config["update_epochs"] = 2
+        trainer_config["minibatch_size"] = 8
+    elif trainer_name == "q_learning":
+        trainer_config["epsilon_decay_steps"] = 64
     if not captures_evaluation:
-        config["trainer"][trainer_name]["total_timesteps"] = 32
-        config["trainer"][trainer_name]["evaluation_episodes"] = 0
+        trainer_config["evaluation_episodes"] = 0
+    else:
+        trainer_config["evaluation_frequency"] = 4
+        trainer_config["evaluation_episodes"] = 1
 
     trainer = trainer_class(config)
     trainer.setup()
@@ -44,8 +60,7 @@ def test_rl_example_performs_short_training(
     finally:
         trainer.close()
 
-    expected_timesteps = 64 if captures_evaluation else 32
-    assert trainer.global_step == expected_timesteps
+    assert trainer.global_step == smoke_timesteps
     assert trainer.update_step > 0
     if captures_evaluation:
         artifact_root = tmp_path / "artifacts"
