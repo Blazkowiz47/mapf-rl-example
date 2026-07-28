@@ -60,7 +60,8 @@ under `policy_state_dict`. Exact evaluation values are also available in
 
 ## Trainer Examples
 
-The training configurations cover every built-in RL trainer. Tabular
+The training configurations cover every built-in RL trainer with neural
+architectures registered from this repository. Tabular
 Q-learning runs on CPU; neural trainers use the configured single GPU:
 
 | Configuration | Trainer | Observation | Action |

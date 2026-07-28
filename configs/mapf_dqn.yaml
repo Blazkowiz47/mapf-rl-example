@@ -59,7 +59,7 @@ evaluation_environment:
 
 models:
   q_network:
-    name: dqn_mlp
+    name: example_dqn_mlp
     hidden_sizes: [64, 64]
 
 optimizers:
