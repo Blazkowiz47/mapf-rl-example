@@ -6,6 +6,19 @@ This is a standalone consumer project showing how
 configuration so new users can follow one complete example without conditional
 trainer logic.
 
+## What's New in 0.9.0?
+
+- all DQN, PPO, SAC, and Dreamer neural architectures are defined and
+  registered beneath `src/models/`
+- `deep-learning-core>=0.1.0,<0.2` supplies only reusable trainer loops,
+  registries, buffers, checkpoints, and model contracts
+- the project models demonstrate every required role and output shape without
+  importing a package-owned architecture
+- the example now targets `deep-learning-robotics>=0.0.6` and
+  `deep-learning-wandb>=0.0.15`
+
+Previous versions are recorded in the [release history](RELEASES.md).
+
 ## Training Results
 
 These are deterministic evaluations of the seeded policies trained for
@@ -60,7 +73,7 @@ under `policy_state_dict`. Exact evaluation values are also available in
 
 ## Trainer Examples
 
-The training configurations cover every built-in RL trainer. DQN, PPO, SAC,
+The training configurations cover every dl-core RL trainer. DQN, PPO, SAC,
 and Dreamer register their neural architectures from this repository; dl-core
 supplies only their reusable training patterns. Tabular Q-learning runs on
 CPU; neural trainers use the configured single GPU:

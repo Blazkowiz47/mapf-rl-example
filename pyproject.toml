@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mapf-rl-example"
-version = "0.8.0"
+version = "0.9.0"
 description = "Standalone RL trainer, MAPF, and continuous-control examples."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "deep-learning-core>=0.0.35,<0.1",
-    "deep-learning-robotics>=0.0.5,<0.1",
-    "deep-learning-wandb>=0.0.14,<0.1",
+    "deep-learning-core>=0.1.0,<0.2",
+    "deep-learning-robotics>=0.0.6,<0.1",
+    "deep-learning-wandb>=0.0.15,<0.1",
     "imageio>=2.34",
     "numpy",
     "opencv-python-headless",
