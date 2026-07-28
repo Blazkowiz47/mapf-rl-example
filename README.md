@@ -13,28 +13,36 @@ on July 28, 2026. They verify that every environment, trainer, update path,
 evaluation, checkpoint, and artifact pipeline works end to end. The budgets
 are intentionally tiny and should not be read as convergence benchmarks.
 
-| MAPF trainer | Transitions | Updates | Return | Success | Collisions | Path length |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Q-learning | 64 | 64 | 0.58 | 0% | 0 | 7 |
-| DQN | 64 | 15 | -2.72 | 0% | 14 | 9 |
-| PPO | 64 | 4 | -1.37 | 0% | 7 | 5 |
-| SAC adapter | 64 | 15 | -0.12 | 0% | 0 | 0 |
+| MAPF trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer | Collisions |
+| --- | ---: | ---: | ---: | ---: | ---: | :---: | ---: |
+| Q-learning | 64 | 64 | 0.58 | 16 | 9 | Yes | 0 |
+| DQN | 64 | 15 | -2.72 | 16 | 7 | Yes | 14 |
+| PPO | 64 | 4 | -1.37 | 16 | 11 | Yes | 7 |
+| SAC adapter | 64 | 15 | -0.12 | 16 | 16 | No | 0 |
 
 Each final MAPF evaluation ran for the 12-step limit. Q-learning produced the
-best final return and moved without collisions, but neither actor reached its
-goal. The SAC adapter learned a collision-free no-op policy at this budget,
-which illustrates why quantized continuous control is not a natural fit for
-the discrete task.
+best final return and moved without collisions. DQN achieved the largest
+distance reduction but incurred 14 collisions, so its lower return correctly
+reflects unsafe movement. The SAC adapter learned a collision-free no-op policy
+at this budget, which illustrates why quantized continuous control is not a
+natural fit for the discrete task.
 
-| Point-mass trainer | Transitions | Updates | Return | Start distance | Final distance | Success |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| SAC acceleration control | 128 | 29 | 1.15 | 11.31 | 9.16 | 0% |
-| PPO velocity control | 128 | 4 | 5.39 | 11.31 | 4.92 | 0% |
+| Point-mass trainer | Transitions | Updates | Return | Start distance | Final distance | Moved closer |
+| --- | ---: | ---: | ---: | ---: | ---: | :---: |
+| SAC acceleration control | 128 | 29 | 1.15 | 11.31 | 9.16 | Yes |
+| PPO velocity control | 128 | 4 | 5.39 | 11.31 | 4.92 | Yes |
 
 Both point-mass policies moved closer to the goal during their 100-step final
 evaluations. Velocity-controlled PPO made the larger reduction, but neither
 entered the configured goal radius. Re-run with larger `total_timesteps`
 values before comparing learning quality.
+
+Every trainer did update during these runs. Q-learning applied 64 direct
+Q-table updates; DQN and MAPF SAC applied 15 optimizer updates each;
+acceleration SAC applied 29; and the two PPO runs applied four rollout updates
+each. No progress bars appeared because these short configurations leave
+`show_progress` at its default `false`; detailed update metrics were still
+written to each run's `final/metrics/` directory.
 
 The complete metrics, trajectories, animations, logs, and checkpoints are
 written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`. Previous
