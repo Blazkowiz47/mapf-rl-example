@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 from dl_core.core import config_field, register_model
@@ -13,7 +13,7 @@ from torch import nn
 class ExampleDQNMLP(nn.Module):
     """Map flattened observations to one Q-value per action."""
 
-    CONFIG_FIELDS = [
+    CONFIG_FIELDS: ClassVar[list[dict[str, Any]]] = [
         config_field(
             "input_dim",
             "int",

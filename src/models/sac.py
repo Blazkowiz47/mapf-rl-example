@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 from dl_core.core import config_field, register_model
@@ -13,7 +13,7 @@ from torch import nn
 class ExampleSACActor(nn.Module):
     """MLP producing state-dependent Gaussian policy parameters."""
 
-    CONFIG_FIELDS = [
+    CONFIG_FIELDS: ClassVar[list[dict[str, Any]]] = [
         config_field("input_dim", "int", "Observation dimension.", required=True),
         config_field("action_dim", "int", "Action dimension.", required=True),
         config_field(
@@ -69,7 +69,7 @@ class ExampleSACActor(nn.Module):
 class ExampleSACCritics(nn.Module):
     """Two independent MLP critics over observation-action pairs."""
 
-    CONFIG_FIELDS = [
+    CONFIG_FIELDS: ClassVar[list[dict[str, Any]]] = [
         config_field("input_dim", "int", "Observation dimension.", required=True),
         config_field("action_dim", "int", "Action dimension.", required=True),
         config_field(

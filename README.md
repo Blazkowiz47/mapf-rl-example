@@ -60,8 +60,9 @@ under `policy_state_dict`. Exact evaluation values are also available in
 
 ## Trainer Examples
 
-The training configurations cover every built-in RL trainer with neural
-architectures registered from this repository. Tabular
+The training configurations cover every built-in RL trainer. DQN, PPO, and
+SAC register their neural architectures from this repository; the Dreamer
+example still uses the legacy core architecture during its migration. Tabular
 Q-learning runs on CPU; neural trainers use the configured single GPU:
 
 | Configuration | Trainer | Observation | Action |
@@ -178,6 +179,9 @@ src/
 ├── episode_managers/
 │   └── pathfinding.py
 ├── models/
+│   ├── dqn.py
+│   ├── ppo.py
+│   ├── sac.py
 │   └── vit_q_network.py
 ├── observation_builders/
 │   ├── pathfinding_rgb.py

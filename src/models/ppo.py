@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, ClassVar
 
 import torch
 from dl_core.core import config_field, register_model
@@ -14,7 +14,7 @@ from torch import nn
 class ExamplePPOPolicy(nn.Module):
     """Shared MLP encoder with policy and scalar-value heads."""
 
-    CONFIG_FIELDS = [
+    CONFIG_FIELDS: ClassVar[list[dict[str, Any]]] = [
         config_field(
             "input_dim",
             "int",
