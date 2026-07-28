@@ -6,18 +6,39 @@ This is a standalone consumer project showing how
 configuration so new users can follow one complete example without conditional
 trainer logic.
 
-## What's New in 0.7.0?
+## Smoke-Training Results
 
-- every researcher-facing override uses its public contract: observation
-  `build()`, callback `on_*()`, episode `summarize_episode()`, and model
-  `forward()`
-- the procedural environment keeps its Gymnasium methods and `get_grid_rgb()`
-  implementations direct and readable
-- the example requires `deep-learning-core>=0.0.34,<0.1`,
-  `deep-learning-robotics>=0.0.5,<0.1`, and
-  `deep-learning-wandb>=0.0.14,<0.1`
+These are the final deterministic evaluations from the seeded short CPU runs
+on July 28, 2026. They verify that every environment, trainer, update path,
+evaluation, checkpoint, and artifact pipeline works end to end. The budgets
+are intentionally tiny and should not be read as convergence benchmarks.
 
-Previous versions are recorded in the [release history](RELEASES.md).
+| MAPF trainer | Transitions | Updates | Return | Success | Collisions | Path length |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Q-learning | 64 | 64 | 0.58 | 0% | 0 | 7 |
+| DQN | 64 | 15 | -2.72 | 0% | 14 | 9 |
+| PPO | 64 | 4 | -1.37 | 0% | 7 | 5 |
+| SAC adapter | 64 | 15 | -0.12 | 0% | 0 | 0 |
+
+Each final MAPF evaluation ran for the 12-step limit. Q-learning produced the
+best final return and moved without collisions, but neither actor reached its
+goal. The SAC adapter learned a collision-free no-op policy at this budget,
+which illustrates why quantized continuous control is not a natural fit for
+the discrete task.
+
+| Point-mass trainer | Transitions | Updates | Return | Start distance | Final distance | Success |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| SAC acceleration control | 128 | 29 | 1.15 | 11.31 | 9.16 | 0% |
+| PPO velocity control | 128 | 4 | 5.39 | 11.31 | 4.92 | 0% |
+
+Both point-mass policies moved closer to the goal during their 100-step final
+evaluations. Velocity-controlled PPO made the larger reduction, but neither
+entered the configured goal radius. Re-run with larger `total_timesteps`
+values before comparing learning quality.
+
+The complete metrics, trajectories, animations, logs, and checkpoints are
+written beneath `artifacts/sweeps/<run-name>/<run-name>/final/`. Previous
+versions are recorded in the [release history](RELEASES.md).
 
 ## Trainer Examples
 
