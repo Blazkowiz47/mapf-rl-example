@@ -3,6 +3,15 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## Unreleased
+
+- standalone MAPF configurations now demonstrate tabular Q-learning, DQN, PPO,
+  and SAC while keeping trainer-specific state and action adapters separate
+- a custom continuous point-mass environment demonstrates configurable time
+  steps, acceleration control, velocity control, and swappable dynamics rules
+- focused tests verify tabular state encoding, continuous MAPF action
+  quantization, exact kinematics, and short trainer lifecycles
+
 ## 0.6.0
 
 - a local registered observation builder demonstrates complete control over

@@ -1,0 +1,79 @@
+seed: 2026
+deterministic: true
+
+runtime:
+  output_dir: artifacts
+  log_level: INFO
+
+experiment:
+  name: point_mass_acceleration_sac
+  description: "SAC controls acceleration in a continuous kinematics environment"
+
+accelerator:
+  type: cpu
+
+environment:
+  name: gymnasium_vector
+  id: PointMassKinematics-v0
+  num_envs: 4
+  vectorization_mode: sync
+  kwargs:
+    dynamics:
+      name: acceleration
+      max_acceleration: 2.0
+      max_speed: 3.0
+    dt: 0.1
+    world_limit: 5.0
+    start_position: [-4.0, -4.0]
+    goal_position: [4.0, 4.0]
+    goal_radius: 0.3
+    max_steps: 100
+
+evaluation_environment:
+  name: gymnasium
+  id: PointMassKinematics-v0
+  kwargs:
+    dynamics:
+      name: acceleration
+      max_acceleration: 2.0
+      max_speed: 3.0
+    dt: 0.1
+    world_limit: 5.0
+    start_position: [-4.0, -4.0]
+    goal_position: [4.0, 4.0]
+    goal_radius: 0.3
+    max_steps: 100
+    render_mode: rgb_array
+
+models:
+  actor:
+    name: sac_gaussian_actor
+    hidden_sizes: [64, 64]
+  critics:
+    name: sac_twin_q_network
+    hidden_sizes: [64, 64]
+
+optimizers:
+  name: adam
+  lr: 0.0003
+
+trainer:
+  sac:
+    total_timesteps: 128
+    max_episode_steps: 100
+    evaluation_frequency: 1
+    evaluation_episodes: 1
+    checkpoint_frequency: 0
+    gamma: 0.99
+    buffer_size: 512
+    batch_size: 16
+    learning_starts: 16
+    train_frequency: 4
+    gradient_steps: 1
+    tau: 0.01
+    initial_alpha: 0.2
+    automatic_entropy_tuning: true
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 1

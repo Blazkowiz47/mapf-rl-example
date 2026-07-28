@@ -1,8 +1,10 @@
-# MAPF RL Example
+# RL Trainer and Robotics Examples
 
 This is a standalone consumer project showing how
 `deep-learning-robotics` environments plug into the vector-aware trainers in
-`deep-learning-core`.
+`deep-learning-core`. Each trainer and control use case has its own
+configuration so new users can follow one complete example without conditional
+trainer logic.
 
 ## What's New in 0.7.0?
 
@@ -17,11 +19,39 @@ This is a standalone consumer project showing how
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
-The example uses centralized DQN for two actors that must exchange opposite
+## Trainer Examples
+
+The short CPU configurations cover every complete built-in RL trainer except
+the still-evolving Dreamer implementation:
+
+| Configuration | Trainer | Observation | Action |
+| --- | --- | --- | --- |
+| `mapf_q_learning.yaml` | Q-learning | `Discrete(625)` ordered joint positions | 25 joint grid moves |
+| `mapf_dqn.yaml` | DQN | 7-channel semantic grid | 25 joint grid moves |
+| `mapf_ppo.yaml` | PPO | 7-channel semantic grid | 25 joint grid moves |
+| `mapf_sac.yaml` | SAC | 7-channel semantic grid | two continuous movement vectors |
+| `point_mass_acceleration_sac.yaml` | SAC | position, velocity, and goal | acceleration |
+| `point_mass_velocity_ppo.yaml` | PPO | position, velocity, and goal | velocity |
+
+The four MAPF configurations use the same two actors exchanging opposite
 corners of a 5×5 grid. Four worlds collect experience in parallel, while a
 separate scalar world performs deterministic evaluation. The robotics episode
 manager records MAPF metrics, the full evaluation trajectory, and an animated
 GIF.
+
+Q-learning has a dedicated `TabularMAPFObservationBuilder`; it maps ordered
+actor cells to one finite state without creating a neural network. PPO and DQN
+use the original discrete environment directly. SAC has its own
+`ContinuousActionMAPFEnv`, where each actor emits a bounded
+`[vertical, horizontal]` command that is quantized to stay, up, right, down, or
+left before the unchanged grid physics runs. That adapter demonstrates the SAC
+interface on the same task, but SAC is not a natural algorithmic baseline for
+an inherently discrete action space.
+
+All MAPF examples persist evaluation trajectories. PPO, DQN, and SAC also
+render GIFs from their spatial observations. The Q-learning configuration uses
+`media_format: none` because its deliberately minimal scalar state does not
+contain renderable grid channels.
 
 The repository also contains `ProceduralPathfindingEnv`, a single-agent
 Gymnasium environment for the ViT pathfinding example. Every reset replaces the
@@ -54,14 +84,21 @@ src/
 ├── bootstrap.py
 ├── callbacks/
 │   └── sampled_wandb.py
+├── dynamics/
+│   ├── acceleration.py
+│   ├── base.py
+│   └── velocity.py
 ├── environments/
+│   ├── continuous_action_mapf.py
+│   ├── point_mass.py
 │   └── procedural_pathfinding.py
 ├── episode_managers/
 │   └── pathfinding.py
 ├── models/
 │   └── vit_q_network.py
 ├── observation_builders/
-│   └── pathfinding_rgb.py
+│   ├── pathfinding_rgb.py
+│   └── tabular_mapf.py
 ├── rules/
 │   ├── exclusive_cells.py
 │   ├── ghost_actors.py
@@ -73,6 +110,46 @@ src/
 `bootstrap.py` imports each local package once, so decorators register
 environments, models, observation builders, callbacks, episode managers, and
 interaction rules before dl-core builds the trainer.
+
+## Continuous Kinematics Environment
+
+`PointMass2DEnv` is a normal custom Gymnasium environment registered as
+`PointMassKinematics-v0`. Its observation is
+`[x, y, velocity_x, velocity_y, goal_x, goal_y]`, and its configured `dt`
+controls every state transition.
+
+The acceleration rule applies constant-acceleration kinematics:
+
+```text
+next_position = position + velocity * dt + 0.5 * acceleration * dt²
+next_velocity = velocity + acceleration * dt
+```
+
+The separate velocity rule treats the model output as the commanded velocity:
+
+```text
+next_position = position + commanded_velocity * dt
+next_velocity = commanded_velocity
+```
+
+Select the rule in YAML without changing the environment:
+
+```yaml
+environment:
+  name: gymnasium_vector
+  id: PointMassKinematics-v0
+  kwargs:
+    dynamics:
+      name: acceleration
+      max_acceleration: 2.0
+      max_speed: 3.0
+    dt: 0.1
+```
+
+The environment owns integration, world-boundary handling, rewards, termination,
+and rendering. The policy only emits the requested acceleration or velocity.
+The two dynamics implementations remain in separate files so their equations
+and extension points are visible.
 
 ## Changing Model Pixels
 
@@ -122,8 +199,14 @@ constraint.
 
 ```bash
 uv sync --extra dev
+uv run dl-run --config configs/mapf_q_learning.yaml --validate-only
 uv run dl-run --config configs/mapf_dqn.yaml --validate-only
-uv run dl-run --config configs/mapf_dqn.yaml
+uv run dl-run --config configs/mapf_ppo.yaml --validate-only
+uv run dl-run --config configs/mapf_sac.yaml --validate-only
+uv run dl-run --config configs/point_mass_acceleration_sac.yaml --validate-only
+uv run dl-run --config configs/point_mass_velocity_ppo.yaml --validate-only
+uv run dl-run --config configs/mapf_ppo.yaml
+uv run dl-run --config configs/point_mass_acceleration_sac.yaml
 uv run dl-run --config configs/pathfinding_vit_dqn.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_pipelined.yaml --validate-only
 uv run dl-run --config configs/pathfinding_vit_compiled.yaml --validate-only
@@ -132,8 +215,8 @@ uv run dl-run --config configs/pathfinding_vit_256_envs.yaml --validate-only
 uv run pytest
 ```
 
-The short 64-transition configuration is an integration example, not a
-convergence benchmark. Increase `trainer.dqn.total_timesteps` for a meaningful
+The short CPU configurations are integration examples, not convergence
+benchmarks. Increase the selected trainer's `total_timesteps` for a meaningful
 learning experiment. `pathfinding_vit_dqn.yaml` is the separate GPU reference
 configuration. Thirty-two environment processes generate and step procedural
 tasks concurrently, while the main process batches policy inference and replay
@@ -377,3 +460,7 @@ The joint action contains `5 ** num_agents` discrete choices, which is useful
 for small cooperative MAPF research and direct DQN/PPO integration. It is not
 the intended scaling path for large fleets; that will require decentralized or
 parameter-shared multi-agent policies.
+
+The SAC MAPF adapter quantizes continuous commands before applying these same
+joint moves. Use the point-mass environment when the research question
+actually requires continuous controls and kinematic state transitions.

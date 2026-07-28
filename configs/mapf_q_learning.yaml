@@ -1,0 +1,93 @@
+seed: 2026
+deterministic: true
+
+runtime:
+  output_dir: artifacts
+  log_level: INFO
+
+experiment:
+  name: mapf_q_learning_example
+  description: "Tabular Q-learning on a discrete two-agent crossing task"
+
+accelerator:
+  type: cpu
+
+environment:
+  name: robotics_mapf_vector
+  num_envs: 4
+  observation_builder:
+    name: example_tabular_mapf
+  interaction_rule:
+    name: example_exclusive_cell
+  scenario:
+    name: two_agent_crossing
+    width: 5
+    height: 5
+    max_steps: 12
+    starts: [[0, 0], [4, 4]]
+    goals: [[4, 4], [0, 0]]
+    walls: [[1, 2], [3, 2]]
+  rewards:
+    step: -0.01
+    progress: 0.10
+    collision: -0.25
+    goal: 1.0
+    success: 5.0
+  render:
+    cell_size: 32
+    show_grid: true
+
+evaluation_environment:
+  name: robotics_mapf
+  observation_builder:
+    name: example_tabular_mapf
+  interaction_rule:
+    name: example_exclusive_cell
+  scenario:
+    name: two_agent_crossing
+    width: 5
+    height: 5
+    max_steps: 12
+    starts: [[0, 0], [4, 4]]
+    goals: [[4, 4], [0, 0]]
+    walls: [[1, 2], [3, 2]]
+  rewards:
+    step: -0.01
+    progress: 0.10
+    collision: -0.25
+    goal: 1.0
+    success: 5.0
+  render:
+    cell_size: 32
+    show_grid: true
+
+trainer:
+  q_learning:
+    total_timesteps: 64
+    max_episode_steps: 12
+    evaluation_frequency: 4
+    evaluation_episodes: 1
+    checkpoint_frequency: 0
+    learning_rate: 0.1
+    gamma: 0.99
+    epsilon_start: 1.0
+    epsilon_end: 0.10
+    epsilon_decay_steps: 64
+
+episode_managers:
+  robotics:
+    capture_phases: [evaluation]
+    capture_every_n_episodes: 1
+    max_captured_episodes: 2
+    info_keys:
+      - episode_collisions
+      - makespan
+      - sum_of_costs
+      - path_length
+    media_format: none
+    fps: 6
+    cell_size: 32
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 1

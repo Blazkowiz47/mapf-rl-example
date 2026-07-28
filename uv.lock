@@ -341,7 +341,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "deep-learning-core", editable = "../dl-core" },
+    { name = "deep-learning-core", specifier = ">=0.0.34,<0.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.12" },

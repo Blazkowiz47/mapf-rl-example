@@ -1,0 +1,114 @@
+seed: 2026
+deterministic: true
+
+runtime:
+  output_dir: artifacts
+  log_level: INFO
+
+experiment:
+  name: mapf_sac_example
+  description: "SAC with continuous movement commands quantized into MAPF moves"
+
+accelerator:
+  type: cpu
+
+environment:
+  name: gymnasium_vector
+  id: ContinuousActionMAPF-v0
+  num_envs: 4
+  vectorization_mode: sync
+  kwargs:
+    action_dead_zone: 0.2
+    interaction_rule:
+      name: example_exclusive_cell
+    scenario:
+      name: two_agent_crossing
+      width: 5
+      height: 5
+      max_steps: 12
+      starts: [[0, 0], [4, 4]]
+      goals: [[4, 4], [0, 0]]
+      walls: [[1, 2], [3, 2]]
+    rewards:
+      step: -0.01
+      progress: 0.10
+      collision: -0.25
+      goal: 1.0
+      success: 5.0
+    render:
+      cell_size: 32
+      show_grid: true
+
+evaluation_environment:
+  name: gymnasium
+  id: ContinuousActionMAPF-v0
+  kwargs:
+    action_dead_zone: 0.2
+    render_mode: rgb_array
+    interaction_rule:
+      name: example_exclusive_cell
+    scenario:
+      name: two_agent_crossing
+      width: 5
+      height: 5
+      max_steps: 12
+      starts: [[0, 0], [4, 4]]
+      goals: [[4, 4], [0, 0]]
+      walls: [[1, 2], [3, 2]]
+    rewards:
+      step: -0.01
+      progress: 0.10
+      collision: -0.25
+      goal: 1.0
+      success: 5.0
+    render:
+      cell_size: 32
+      show_grid: true
+
+models:
+  actor:
+    name: sac_gaussian_actor
+    hidden_sizes: [64, 64]
+  critics:
+    name: sac_twin_q_network
+    hidden_sizes: [64, 64]
+
+optimizers:
+  name: adam
+  lr: 0.0003
+
+trainer:
+  sac:
+    total_timesteps: 64
+    max_episode_steps: 12
+    evaluation_frequency: 4
+    evaluation_episodes: 1
+    checkpoint_frequency: 0
+    gamma: 0.99
+    buffer_size: 256
+    batch_size: 8
+    learning_starts: 8
+    train_frequency: 4
+    gradient_steps: 1
+    tau: 0.01
+    initial_alpha: 0.2
+    automatic_entropy_tuning: true
+    checkpoint_replay_buffer: true
+
+episode_managers:
+  robotics:
+    capture_phases: [evaluation]
+    capture_every_n_episodes: 1
+    max_captured_episodes: 2
+    info_keys:
+      - episode_collisions
+      - makespan
+      - sum_of_costs
+      - path_length
+    media_format: gif
+    fps: 6
+    cell_size: 32
+
+callbacks:
+  local_metric_tracker:
+    log_frequency: 1

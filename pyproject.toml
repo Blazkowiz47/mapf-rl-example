@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "mapf-rl-example"
 version = "0.7.0"
-description = "Vector DQN example for a two-agent MAPF problem."
+description = "Standalone RL trainer, MAPF, and continuous-control examples."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
