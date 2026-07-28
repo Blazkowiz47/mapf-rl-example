@@ -23,10 +23,11 @@ Previous versions are recorded in the [release history](RELEASES.md).
 
 These are deterministic evaluations of the seeded policies trained for
 100,000 transitions on July 28, 2026. Each value is the mean of five held-out
-episodes with seeds 50000–50004. Every numbered 25k, 50k, 75k, and 100k
-checkpoint was evaluated on the same seeds; the tables report the strongest
-checkpoint by success rate, return, final distance, episode length, and
-recency, in that order.
+episodes with indices 50000–50004. With the configured base seed and dl-core's
+evaluation offset, these map to environment seeds 1,052,026–1,052,030. Every
+numbered 25k, 50k, 75k, and 100k checkpoint was evaluated on those same seeds;
+the tables report the strongest checkpoint by success rate, return, final
+distance, episode length, and recency, in that order.
 
 | MAPF trainer | Transitions | Updates | Return | Steps | Start distance | Final distance | Moved closer | Goals reached | Collisions |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | :---: | :---: | ---: |

@@ -31,7 +31,14 @@ def main() -> None:
         ),
     )
     parser.add_argument("--episodes", type=int, default=5)
-    parser.add_argument("--seed", type=int, default=50_000)
+    parser.add_argument(
+        "--episode-index",
+        "--seed",
+        dest="episode_index",
+        type=int,
+        default=50_000,
+        help="First evaluation episode index.",
+    )
     args = parser.parse_args()
     if args.episodes <= 0:
         parser.error("--episodes must be positive")
@@ -110,7 +117,7 @@ def main() -> None:
                     for episode in range(args.episodes):
                         result = trainer.run_episode(
                             training=False,
-                            episode=args.seed + episode,
+                            episode=args.episode_index + episode,
                         )
                         episode_returns.append(result.episode_return)
                         episode_lengths.append(result.length)
@@ -194,7 +201,7 @@ def main() -> None:
         json.dumps(
             {
                 "episodes_per_checkpoint": args.episodes,
-                "seed_start": args.seed,
+                "episode_index_start": args.episode_index,
                 "selection_order": [
                     "success_rate",
                     "mean_return",

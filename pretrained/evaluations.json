@@ -1,4 +1,5 @@
 {
+  "episode_index_start": 50000,
   "episodes_per_checkpoint": 5,
   "models": {
     "mapf_dqn_100k": {
@@ -475,7 +476,6 @@
       }
     }
   },
-  "seed_start": 50000,
   "selection_order": [
     "success_rate",
     "mean_return",
