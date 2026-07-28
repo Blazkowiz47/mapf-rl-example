@@ -502,7 +502,7 @@ including:
 
 - 20 numbered checkpoints plus `latest.pth`
 - `final/metrics/episodes_pathfinding.jsonl` and `evaluations.jsonl`
-- per-metric JSONL series, plots, logs, run metadata, and tracking metadata
+- per-metric JSONL series, logs, run metadata, and tracking metadata
 
 ## Classical Baselines
 
