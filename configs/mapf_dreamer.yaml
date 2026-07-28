@@ -63,17 +63,17 @@ evaluation_environment:
 
 models:
   world_model:
-    name: dreamer_world_model
+    name: example_dreamer_world_model
     embedding_size: 64
     deterministic_size: 64
     stochastic_size: 8
     classes: 8
     hidden_size: 128
   actor:
-    name: dreamer_actor
+    name: example_dreamer_actor
     hidden_size: 128
   critic:
-    name: dreamer_critic
+    name: example_dreamer_critic
     hidden_size: 128
 
 optimizers:

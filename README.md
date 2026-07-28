@@ -60,10 +60,10 @@ under `policy_state_dict`. Exact evaluation values are also available in
 
 ## Trainer Examples
 
-The training configurations cover every built-in RL trainer. DQN, PPO, and
-SAC register their neural architectures from this repository; the Dreamer
-example still uses the legacy core architecture during its migration. Tabular
-Q-learning runs on CPU; neural trainers use the configured single GPU:
+The training configurations cover every built-in RL trainer. DQN, PPO, SAC,
+and Dreamer register their neural architectures from this repository; dl-core
+supplies only their reusable training patterns. Tabular Q-learning runs on
+CPU; neural trainers use the configured single GPU:
 
 | Configuration | Trainer | Observation | Action |
 | --- | --- | --- | --- |
@@ -99,7 +99,10 @@ not contain renderable grid channels.
 
 The Dreamer example explicitly selects the compact `semantic_grid` observation
 builder. Each world emits a `7 × 5 × 5` tensor, which the world model flattens
-and encodes without storing high-resolution RGB frames.
+and encodes without storing high-resolution RGB frames. The encoder, RSSM,
+decoder, actor, and critic are implemented in `src/models/dreamer.py`; the
+sequence replay, losses, imagination loop, and target updates come from
+`DreamerTrainer`.
 
 ```mermaid
 flowchart LR
@@ -180,6 +183,7 @@ src/
 │   └── pathfinding.py
 ├── models/
 │   ├── dqn.py
+│   ├── dreamer.py
 │   ├── ppo.py
 │   ├── sac.py
 │   └── vit_q_network.py
