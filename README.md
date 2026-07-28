@@ -6,16 +6,17 @@ This is a standalone consumer project showing how
 configuration so new users can follow one complete example without conditional
 trainer logic.
 
-## What's New in 0.9.0?
+## What's New in 0.9.1?
 
-- all DQN, PPO, SAC, and Dreamer neural architectures are defined and
-  registered beneath `src/models/`
-- `deep-learning-core>=0.1.0,<0.2` supplies only reusable trainer loops,
-  registries, buffers, checkpoints, and model contracts
-- the project models demonstrate every required role and output shape without
-  importing a package-owned architecture
-- the example now targets `deep-learning-robotics>=0.0.6` and
-  `deep-learning-wandb>=0.0.15`
+- all seven compact RL examples were retrained against the public
+  `deep-learning-core==0.1.0` stack and now export their strongest fixed-seed
+  checkpoint, including Dreamer's world model and actor
+- the 256-environment ViT-DQN experiment completed a fresh 2,000,128-transition
+  run, with loss, weights, path efficiency, and timing tracked in W&B
+- every 100k ViT checkpoint was evaluated on the same 20 held-out mazes; the
+  selected final policy solves one maze and moves closer on 17/20
+- successful and moved-closer evaluation animations are included with the full
+  checkpoint comparison
 
 Previous versions are recorded in the [release history](RELEASES.md).
 
@@ -429,11 +430,11 @@ both GIF and MP4 trajectories:
 ```bash
 mkdir -p artifacts/checkpoints
 curl -L \
-  https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m/pathfinding_vit_2m_best.pth \
-  -o artifacts/checkpoints/pathfinding_vit_2m_best.pth
+  https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m-core-0.1.0/pathfinding_vit_2m_core_0_1_0_best.pth \
+  -o artifacts/checkpoints/pathfinding_vit_2m_core_0_1_0_best.pth
 uv run python scripts/evaluate_pathfinding_checkpoint.py \
   --config configs/pathfinding_vit_compiled.yaml \
-  --checkpoint artifacts/checkpoints/pathfinding_vit_2m_best.pth
+  --checkpoint artifacts/checkpoints/pathfinding_vit_2m_core_0_1_0_best.pth
 ```
 
 The evaluator loads only the online ViT weights, performs no pretrained-weight
@@ -447,54 +448,61 @@ semantics; use `--frame-stride 1` for every step.
 
 ### Released 2M-transition checkpoint
 
-The [released reference checkpoint](https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m/pathfinding_vit_2m_best.pth)
-is the final resumable ViT-DQN trainer checkpoint from the 256-environment
-compiled run. It was selected by comparing the untrained model and three
-training checkpoints on the same 20 unseen procedural mazes (seeds
-40000–40019), using deterministic actions and 128 steps per episode:
+The [released reference checkpoint](https://github.com/Blazkowiz47/mapf-rl-example/releases/download/pathfinding-vit-2m-core-0.1.0/pathfinding_vit_2m_core_0_1_0_best.pth)
+is the final resumable ViT-DQN trainer checkpoint from the
+[public W&B run](https://wandb.ai/blazkowiz47/mapf-rl-example/runs/ok4a67nh).
+Training used 256 asynchronous environments, a 256-sample replay batch, two
+inference-only actor copies, and the public core 0.1.0 package. It completed
+2,000,128 transitions and 7,798 updates in 1:48:59.
+
+The selected model was compared with the untrained baseline and every numbered
+100k checkpoint on the same 20 unseen procedural mazes (seeds 40000–40019),
+using deterministic actions and a 128-step limit. Success rate was selected
+first, followed by mean return, final distance, collisions, and recency:
 
 | Checkpoint | Success | Mean return | Mean final distance | Mean distance reduction | Collisions |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | Untrained | 0/20 | -26.365 | 385.60 | -111.10 | 1,829 |
-| 500,224 transitions | 0/20 | -13.298 | **132.90** | **141.60** | 1,188 |
-| 1,300,224 transitions | 0/20 | -9.661 | 139.15 | 135.35 | 887 |
-| **2,000,000 transitions** | 0/20 | **-3.359** | 166.55 | 107.95 | **339** |
+| 400,128 transitions | 0/20 | -6.321 | 117.80 | 156.70 | 654 |
+| 600,064 transitions | 0/20 | -8.253 | **114.40** | **160.10** | 814 |
+| 900,096 transitions | 1/20 | -8.048 | 123.95 | 150.55 | 806 |
+| 1,300,224 transitions | 0/20 | **-1.654** | 148.20 | 126.30 | **232** |
+| 1,400,064 transitions | 1/20 | -5.664 | 157.55 | 116.95 | 562 |
+| 1,700,096 transitions | 1/20 | -7.463 | 140.95 | 133.55 | 732 |
+| 1,900,032 transitions | 1/20 | -3.450 | 160.95 | 113.55 | 379 |
+| **2,000,128 transitions** | **1/20** | -2.559 | 197.15 | 77.35 | 250 |
 
-The final model was selected because it has the highest held-out mean return,
-the training objective, and the fewest collisions. The 500,224-transition
-checkpoint performs best on final distance and distance reduction. The
-released model still demonstrates a learned goal-directed signal—18 of its 20
-final positions were closer to the goal than their starting positions—but it
-does not yet solve the task reliably and should be treated as a research
-checkpoint rather than a converged policy.
+The final model is selected because it has the best mean return among all
+checkpoints that solved a held-out maze. The 1.3M checkpoint has the best
+overall mean return and fewest collisions but no successes; the 600k
+checkpoint has the best final distance and moves closer on all 20 mazes. The
+final policy moves closer on 17/20 mazes and remains a research checkpoint
+rather than a reliably converged policy. The
+[complete machine-readable comparison](docs/results/pathfinding_vit_core_0_1_0.json)
+contains all 21 candidates.
 
-For example, on held-out seed 40019 the solid red agent reduced its Manhattan
-distance to the hollow blue goal from 279 to 23 pixels—a 256-pixel
-improvement—with zero collisions and a return of 3.84. The episode still
-reached its 128-step limit rather than the goal, so this is evidence of moving
-closer rather than a claimed success. The animation samples every eighth
-environment frame:
+On held-out seed 40015, the solid red agent reaches the hollow blue goal in 30
+actions with zero collisions, reducing Manhattan distance from 185 to zero and
+earning a return of 8.40:
 
-![The released ViT-DQN policy moving the red agent closer to the hollow blue goal on held-out seed 40019](docs/media/pathfinding/heldout_seed_40019.gif)
+![The released ViT-DQN policy reaching the hollow blue goal on held-out seed 40015](docs/media/pathfinding/heldout_seed_40015_success.gif)
 
-There is also an important constraint in this experiment: actions move the
-agent by eight logical pixels, while starts and goals were sampled at arbitrary
-pixel coordinates. Without a collision shortening an action, direct exact
-completion is possible only when both coordinate differences are divisible by
-eight; none of these 20 held-out episodes met that condition. Future
-convergence experiments should either sample starts and goals on the movement
-lattice or use a one-pixel stride.
+Seed 40001 shows a separate partial-success case: the agent reduces its
+distance from 241 to 19 pixels without collisions and earns 3.16, but reaches
+the 128-step limit:
+
+![The released ViT-DQN policy moving closer to the hollow blue goal on held-out seed 40001](docs/media/pathfinding/heldout_seed_40001_closer.gif)
 
 The checkpoint SHA-256 is
-`667d0c2ddfb9141619e5cc824412744e9c76c95e8bc85de201df0188d085397a`.
+`7216311410c98201843215126eafcf77aceecbed520cc6ade7f8e2dc5b59032a`.
 
 The training CLI writes artifacts beneath
-`artifacts/sweeps/mapf_dqn/mapf_dqn/`, including:
+`artifacts/sweeps/pathfinding_vit_core_0_1_0_2m/pathfinding_vit_2m_core_0_1_0/`,
+including:
 
-- checkpoints and normal dl-core run metadata
-- `final/metrics/episodes_robotics.jsonl`
-- captured evaluation trajectories under `final/episodes/evaluation/*.npz`
-- matching evaluation animations under `final/episodes/evaluation/*.gif`
+- 20 numbered checkpoints plus `latest.pth`
+- `final/metrics/episodes_pathfinding.jsonl` and `evaluations.jsonl`
+- per-metric JSONL series, plots, logs, run metadata, and tracking metadata
 
 ## Classical Baselines
 

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mapf-rl-example"
-version = "0.9.0"
+version = "0.9.1"
 description = "Standalone RL trainer, MAPF, and continuous-control examples."
 readme = "README.md"
 requires-python = ">=3.10"

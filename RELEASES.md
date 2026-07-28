@@ -3,6 +3,16 @@
 The main README shows only the latest release. This page preserves the
 release-by-release changes.
 
+## 0.9.0
+
+- all DQN, PPO, SAC, and Dreamer neural architectures are defined and
+  registered beneath `src/models/`
+- `deep-learning-core>=0.1.0,<0.2` supplies reusable trainer loops, registries,
+  buffers, checkpoints, and model contracts without bundled architectures
+- the project models demonstrate every required role and output shape
+- dependency floors target `deep-learning-robotics>=0.0.6` and
+  `deep-learning-wandb>=0.0.15`
+
 ## 0.8.0
 
 - a compact semantic-grid MAPF configuration demonstrates recurrent Dreamer
