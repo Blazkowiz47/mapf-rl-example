@@ -47,10 +47,10 @@ evaluation_environment:
 
 models:
   actor:
-    name: sac_gaussian_actor
+    name: example_sac_actor
     hidden_sizes: [64, 64]
   critics:
-    name: sac_twin_q_network
+    name: example_sac_critics
     hidden_sizes: [64, 64]
 
 optimizers:
