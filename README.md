@@ -23,25 +23,30 @@ Previous versions are recorded in the [release history](RELEASES.md).
 
 These are deterministic evaluations of the seeded policies trained for
 100,000 transitions on July 28, 2026. Each value is the mean of five held-out
-episodes; all five episodes produced the same result. Dreamer is not included
-because its longer training run is still in progress.
+episodes with seeds 50000–50004. Every numbered 25k, 50k, 75k, and 100k
+checkpoint was evaluated on the same seeds; the tables report the strongest
+checkpoint by success rate, return, final distance, episode length, and
+recency, in that order.
 
 | MAPF trainer | Transitions | Updates | Return | Steps | Start distance | Final distance | Moved closer | Goals reached | Collisions |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | :---: | :---: | ---: |
 | Q-learning | 100,000 | 100,000 | 8.50 | 10 | 16 | 0 | Yes | 2/2 | 0 |
-| DQN | 100,000 | 24,751 | 2.08 | 12 | 16 | 4 | Yes | 1/2 | 0 |
+| DQN | 75,000 | 18,501 | 2.18 | 12 | 16 | 3 | Yes | 1/2 | 0 |
 | PPO | 100,000 | 196 | 2.08 | 12 | 16 | 4 | Yes | 1/2 | 0 |
-| SAC adapter | 100,000 | 24,751 | 2.18 | 12 | 16 | 3 | Yes | 1/2 | 0 |
+| SAC adapter | 50,000 | 12,251 | 8.52 | 8 | 16 | 0 | Yes | 2/2 | 0 |
+| Dreamer | 75,000 | 4,625 | -1.72 | 12 | 16 | 12 | Yes | 0/2 | 8 |
 
-Q-learning solved the complete crossing task. The three neural policies moved
-both actors closer without collisions and delivered one actor to its goal
-within the 12-step limit. MAPF distance is the sum of each actor's Manhattan
+Q-learning and the 50k SAC adapter checkpoint solved the complete crossing
+task. DQN and PPO moved both actors closer without collisions and delivered one
+actor to its goal. Dreamer reduced the combined distance but did not reach a
+goal and incurred eight collisions, so it is a trained research baseline rather
+than a solved policy. MAPF distance is the sum of each actor's Manhattan
 distance to its assigned goal.
 
 | Point-mass trainer | Transitions | Updates | Return | Steps | Start distance | Final distance | Moved closer | Goal reached |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | :---: | :---: |
 | SAC acceleration control | 100,000 | 24,751 | 20.90 | 34 | 11.31 | 0.08 | Yes | Yes |
-| PPO velocity control | 100,000 | 196 | 20.97 | 27 | 11.31 | 0.07 | Yes | Yes |
+| PPO velocity control | 75,000 | 146 | 21.00 | 27 | 11.31 | 0.04 | Yes | Yes |
 
 Both continuous policies entered the configured goal radius. Velocity control
 reached it in 27 steps, while acceleration control reached it in 34 steps using
@@ -57,18 +62,24 @@ The repository includes one compact inference model per completed use case.
 Replay buffers, optimizer state, metric history, and intermediate checkpoints
 are intentionally excluded.
 
+The `100k` filenames describe each run's training budget. The artifact metadata
+records the selected checkpoint, which can be earlier when later training
+regresses.
+
 | Use case | Model | Inference state |
 | --- | --- | --- |
 | MAPF Q-learning | [`mapf_q_learning_100k.pt`](pretrained/mapf_q_learning_100k.pt) | Q-table |
 | MAPF DQN | [`mapf_dqn_100k.pt`](pretrained/mapf_dqn_100k.pt) | Online Q-network |
 | MAPF PPO | [`mapf_ppo_100k.pt`](pretrained/mapf_ppo_100k.pt) | Actor-critic policy |
 | MAPF SAC adapter | [`mapf_sac_100k.pt`](pretrained/mapf_sac_100k.pt) | Actor |
+| MAPF Dreamer | [`mapf_dreamer_100k.pt`](pretrained/mapf_dreamer_100k.pt) | World model and actor |
 | Point-mass acceleration SAC | [`point_mass_acceleration_sac_100k.pt`](pretrained/point_mass_acceleration_sac_100k.pt) | Actor |
 | Point-mass velocity PPO | [`point_mass_velocity_ppo_100k.pt`](pretrained/point_mass_velocity_ppo_100k.pt) | Actor-critic policy |
 
 Load any file with `torch.load(path, map_location="cpu", weights_only=True)`.
 The artifact names its matching configuration and exposes the learned tensors
-under `policy_state_dict`. Exact evaluation values are also available in
+under `policy_state_dicts`. Exact selected and candidate evaluations are
+available in
 [`pretrained/evaluations.json`](pretrained/evaluations.json).
 
 ## Trainer Examples
@@ -325,9 +336,15 @@ The main configurations now default to 100,000 transitions, display progress,
 evaluate periodically, and save numbered checkpoints every 25,000 transitions.
 Neural trainers use `single_gpu`; tabular Q-learning remains on CPU. They are
 meaningful training sessions rather than instant smoke runs, although
-convergence still depends on the algorithm and task. The historical results
-above came from the earlier 64/128-transition validation budgets and should be
-replaced after the longer runs complete.
+convergence still depends on the algorithm and task.
+
+Compare every numbered checkpoint on the same fixed seeds, then refresh the
+compact inference exports:
+
+```bash
+uv run python scripts/evaluate_rl_checkpoints.py
+uv run python scripts/export_rl_models.py
+```
 
 `pathfinding_vit_dqn.yaml` is the separate GPU reference configuration.
 Thirty-two environment processes generate and step procedural tasks

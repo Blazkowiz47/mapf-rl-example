@@ -1,72 +1,486 @@
 {
-  "mapf_dqn_100k": {
-    "collisions": 0,
-    "final_distance": 4,
-    "goals_reached": 1,
-    "mean_length": 12.0,
-    "mean_return": 2.080000003799796,
-    "moved_closer": true,
-    "start_distance": 16,
-    "success_rate": 0.0,
-    "transitions": 100000,
-    "updates": 24751
+  "episodes_per_checkpoint": 5,
+  "models": {
+    "mapf_dqn_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "collisions": 12,
+          "final_distance": 10.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -2.5199999306350946,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 25000,
+          "updates": 6001
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "collisions": 0,
+          "final_distance": 4.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": 1.0800000242888927,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 50000,
+          "updates": 12251
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "collisions": 0,
+          "final_distance": 3.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.1800000201910734,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 75000,
+          "updates": 18501
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "collisions": 0,
+          "final_distance": 4.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.080000003799796,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 100000,
+          "updates": 24751
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000075000.pth",
+        "collisions": 0,
+        "final_distance": 3.0,
+        "goals_reached": 1,
+        "mean_length": 12.0,
+        "mean_return": 2.1800000201910734,
+        "moved_closer": true,
+        "start_distance": 16.0,
+        "success_rate": 0.0,
+        "transitions": 75000,
+        "updates": 18501
+      }
+    },
+    "mapf_dreamer_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "collisions": 11,
+          "final_distance": 8.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -2.069999933242798,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 25000,
+          "updates": 1500
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "collisions": 8,
+          "final_distance": 12.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -1.71999990940094,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 50000,
+          "updates": 3063
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "collisions": 8,
+          "final_distance": 12.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -1.71999990940094,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 75000,
+          "updates": 4625
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "collisions": 16,
+          "final_distance": 8.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -3.319999933242798,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 100000,
+          "updates": 6188
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000075000.pth",
+        "collisions": 8,
+        "final_distance": 12.0,
+        "goals_reached": 0,
+        "mean_length": 12.0,
+        "mean_return": -1.71999990940094,
+        "moved_closer": true,
+        "start_distance": 16.0,
+        "success_rate": 0.0,
+        "transitions": 75000,
+        "updates": 4625
+      }
+    },
+    "mapf_ppo_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "collisions": 0,
+          "final_distance": 16.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -0.11999999731779099,
+          "moved_closer": false,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 25000,
+          "updates": 48
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "collisions": 0,
+          "final_distance": 16.0,
+          "goals_reached": 0,
+          "mean_length": 12.0,
+          "mean_return": -0.11999999731779099,
+          "moved_closer": false,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 50000,
+          "updates": 97
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "collisions": 0,
+          "final_distance": 4.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.0800000354647636,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 75000,
+          "updates": 146
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "collisions": 0,
+          "final_distance": 4.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.0800000354647636,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 100000,
+          "updates": 196
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000100000.pth",
+        "collisions": 0,
+        "final_distance": 4.0,
+        "goals_reached": 1,
+        "mean_length": 12.0,
+        "mean_return": 2.0800000354647636,
+        "moved_closer": true,
+        "start_distance": 16.0,
+        "success_rate": 0.0,
+        "transitions": 100000,
+        "updates": 196
+      }
+    },
+    "mapf_q_learning_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "collisions": 0,
+          "final_distance": 1.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.380000026896596,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 25000,
+          "updates": 25000
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "collisions": 0,
+          "final_distance": 0.0,
+          "goals_reached": 2,
+          "mean_length": 10.0,
+          "mean_return": 8.500000178813934,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 1.0,
+          "transitions": 50000,
+          "updates": 50000
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "collisions": 0,
+          "final_distance": 0.0,
+          "goals_reached": 2,
+          "mean_length": 10.0,
+          "mean_return": 8.500000178813934,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 1.0,
+          "transitions": 75000,
+          "updates": 75000
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "collisions": 0,
+          "final_distance": 0.0,
+          "goals_reached": 2,
+          "mean_length": 10.0,
+          "mean_return": 8.500000178813934,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 1.0,
+          "transitions": 100000,
+          "updates": 100000
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000100000.pth",
+        "collisions": 0,
+        "final_distance": 0.0,
+        "goals_reached": 2,
+        "mean_length": 10.0,
+        "mean_return": 8.500000178813934,
+        "moved_closer": true,
+        "start_distance": 16.0,
+        "success_rate": 1.0,
+        "transitions": 100000,
+        "updates": 100000
+      }
+    },
+    "mapf_sac_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "collisions": 0,
+          "final_distance": 2.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.2800000570714474,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 25000,
+          "updates": 6001
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "collisions": 0,
+          "final_distance": 0.0,
+          "goals_reached": 2,
+          "mean_length": 8.0,
+          "mean_return": 8.520000040531158,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 1.0,
+          "transitions": 50000,
+          "updates": 12251
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "collisions": 0,
+          "final_distance": 2.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.280000001192093,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 75000,
+          "updates": 18501
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "collisions": 0,
+          "final_distance": 3.0,
+          "goals_reached": 1,
+          "mean_length": 12.0,
+          "mean_return": 2.180000053718686,
+          "moved_closer": true,
+          "start_distance": 16.0,
+          "success_rate": 0.0,
+          "transitions": 100000,
+          "updates": 24751
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000050000.pth",
+        "collisions": 0,
+        "final_distance": 0.0,
+        "goals_reached": 2,
+        "mean_length": 8.0,
+        "mean_return": 8.520000040531158,
+        "moved_closer": true,
+        "start_distance": 16.0,
+        "success_rate": 1.0,
+        "transitions": 50000,
+        "updates": 12251
+      }
+    },
+    "point_mass_acceleration_sac_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "final_distance": 0.24674880504608154,
+          "goal_reached": true,
+          "mean_length": 45.0,
+          "mean_return": 20.61695983237587,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 25000,
+          "updates": 6001
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "final_distance": 0.14704234898090363,
+          "goal_reached": true,
+          "mean_length": 34.0,
+          "mean_return": 20.826665937667713,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 50000,
+          "updates": 12251
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "final_distance": 0.20254017412662506,
+          "goal_reached": true,
+          "mean_length": 34.0,
+          "mean_return": 20.771168483421206,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 75000,
+          "updates": 18501
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "final_distance": 0.07515059411525726,
+          "goal_reached": true,
+          "mean_length": 34.0,
+          "mean_return": 20.898557944223285,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 100000,
+          "updates": 24751
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000100000.pth",
+        "final_distance": 0.07515059411525726,
+        "goal_reached": true,
+        "mean_length": 34.0,
+        "mean_return": 20.898557944223285,
+        "moved_closer": true,
+        "start_distance": 11.313708305358887,
+        "success_rate": 1.0,
+        "transitions": 100000,
+        "updates": 24751
+      }
+    },
+    "point_mass_velocity_ppo_100k": {
+      "candidates": [
+        {
+          "checkpoint": "step_000000025000.pth",
+          "final_distance": 0.23209676146507263,
+          "goal_reached": true,
+          "mean_length": 33.0,
+          "mean_return": 20.75161223858595,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 25000,
+          "updates": 48
+        },
+        {
+          "checkpoint": "step_000000050000.pth",
+          "final_distance": 0.09577842056751251,
+          "goal_reached": true,
+          "mean_length": 29.0,
+          "mean_return": 20.92792996764183,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 50000,
+          "updates": 97
+        },
+        {
+          "checkpoint": "step_000000075000.pth",
+          "final_distance": 0.04188323765993118,
+          "goal_reached": true,
+          "mean_length": 27.0,
+          "mean_return": 21.001825660467148,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 75000,
+          "updates": 146
+        },
+        {
+          "checkpoint": "step_000000100000.pth",
+          "final_distance": 0.0712292492389679,
+          "goal_reached": true,
+          "mean_length": 27.0,
+          "mean_return": 20.972479283809662,
+          "moved_closer": true,
+          "start_distance": 11.313708305358887,
+          "success_rate": 1.0,
+          "transitions": 100000,
+          "updates": 196
+        }
+      ],
+      "selected": {
+        "checkpoint": "step_000000075000.pth",
+        "final_distance": 0.04188323765993118,
+        "goal_reached": true,
+        "mean_length": 27.0,
+        "mean_return": 21.001825660467148,
+        "moved_closer": true,
+        "start_distance": 11.313708305358887,
+        "success_rate": 1.0,
+        "transitions": 75000,
+        "updates": 146
+      }
+    }
   },
-  "mapf_ppo_100k": {
-    "collisions": 0,
-    "final_distance": 4,
-    "goals_reached": 1,
-    "mean_length": 12.0,
-    "mean_return": 2.0800000354647636,
-    "moved_closer": true,
-    "start_distance": 16,
-    "success_rate": 0.0,
-    "transitions": 100000,
-    "updates": 196
-  },
-  "mapf_q_learning_100k": {
-    "collisions": 0,
-    "final_distance": 0,
-    "goals_reached": 2,
-    "mean_length": 10.0,
-    "mean_return": 8.500000178813934,
-    "moved_closer": true,
-    "start_distance": 16,
-    "success_rate": 1.0,
-    "transitions": 100000,
-    "updates": 100000
-  },
-  "mapf_sac_100k": {
-    "collisions": 0,
-    "final_distance": 3,
-    "goals_reached": 1,
-    "mean_length": 12.0,
-    "mean_return": 2.180000053718686,
-    "moved_closer": true,
-    "start_distance": 16,
-    "success_rate": 0.0,
-    "transitions": 100000,
-    "updates": 24751
-  },
-  "point_mass_acceleration_sac_100k": {
-    "final_distance": 0.07515059411525726,
-    "goal_reached": true,
-    "mean_length": 34.0,
-    "mean_return": 20.898557944223285,
-    "moved_closer": true,
-    "start_distance": 11.313708305358887,
-    "success_rate": 1.0,
-    "transitions": 100000,
-    "updates": 24751
-  },
-  "point_mass_velocity_ppo_100k": {
-    "final_distance": 0.0712292492389679,
-    "goal_reached": true,
-    "mean_length": 27.0,
-    "mean_return": 20.972479283809662,
-    "moved_closer": true,
-    "start_distance": 11.313708305358887,
-    "success_rate": 1.0,
-    "transitions": 100000,
-    "updates": 196
-  }
+  "seed_start": 50000,
+  "selection_order": [
+    "success_rate",
+    "mean_return",
+    "lowest_final_distance",
+    "shortest_episode",
+    "latest_transition"
+  ]
 }
